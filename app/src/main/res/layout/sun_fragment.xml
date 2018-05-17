@@ -1,14 +1,30 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context="com.example.michalparysz.weatherapp.SunActivity">
+    android:layout_height="match_parent">
 
     <TableLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="2dp">
+        android:layout_marginTop="100dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp">
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+            <Button
+                android:id="@+id/sunButton"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/sun"
+                />
 
+            <Button
+                android:id="@+id/moonButton"
+                android:layout_width="181dp"
+                android:layout_height="match_parent"
+                android:text="@string/moon"/>
+        </TableRow>
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent">
@@ -17,22 +33,16 @@
                 android:id="@+id/textView16"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="sunriseName"
+                android:text="@string/sunrisename"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-        </TableRow>
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
             <TextView
                 android:id="@+id/sunriseTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textSize="18sp" />
-
         </TableRow>
 
         <TableRow
@@ -43,19 +53,14 @@
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="azimuthName"
+                android:text="@string/azimuthname"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-        </TableRow>
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
             <TextView
                 android:id="@+id/sunriseAzimuth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textSize="18sp" />
         </TableRow>
@@ -68,23 +73,18 @@
                 android:id="@+id/textView14"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="sunsetName"
+                android:text="@string/sunsetname"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
             <TextView
                 android:id="@+id/sunsetTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textSize="18sp" />
         </TableRow>
+
 
         <TableRow
             android:layout_width="match_parent"
@@ -94,20 +94,14 @@
                 android:id="@+id/textView2"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="azimuthName"
+                android:text="@string/azimuthname"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
             <TextView
                 android:id="@+id/sunsetAzimuth"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textSize="18sp" />
         </TableRow>
@@ -120,23 +114,16 @@
                 android:id="@+id/textView5"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="civilSunriseName"
+                android:text="@string/civilsunrisename"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
             <TextView
                 android:id="@+id/civilSunrise"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textSize="18sp" />
-
         </TableRow>
 
         <TableRow
@@ -148,24 +135,18 @@
                 android:id="@+id/textView10"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="civilSunsetName"
+                android:text="@string/civilsunsetname"
                 android:textSize="18sp"
                 android:textStyle="bold" />
-
-        </TableRow>
-
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-
             <TextView
                 android:id="@+id/civilSunset"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="TextView"
+                android:text=""
                 android:textAlignment="textEnd"
                 android:textSize="18sp" />
         </TableRow>
+
 
     </TableLayout>
 

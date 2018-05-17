@@ -1,3 +1,16 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">WeatherApp</string>
+    <string name="moonrisename">moonRiseName</string>
+    <string name="moonsetname">moonSetName</string>
+    <string name="nextnewmoonname">nextNewMoonName</string>
+    <string name="nextfullmoonname">nextFullMoonName</string>
+    <string name="illuminationname">illuminationName</string>
+    <string name="monthagename">monthAgeName</string>
+    <string name="sunrisename">sunriseName</string>
+    <string name="azimuthname">azimuthName</string>
+    <string name="sunsetname">sunsetName</string>
+    <string name="civilsunrisename">civilSunriseName</string>
+    <string name="civilsunsetname">civilSunsetName</string>
+    <string name="moon">Moon</string>
+    <string name="sun">Sun</string>
 </resources>
