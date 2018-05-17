@@ -6,22 +6,7 @@
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-        <TableRow
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" >
-            <Button
-                android:id="@+id/sunButton"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@string/sun"
-                />
 
-            <Button
-                android:id="@+id/moonButton"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:text="@string/moon"/>
-        </TableRow>
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent">

@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.astrocalculator.AstroCalculator;
+import com.astrocalculator.AstroDateTime;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -44,25 +45,29 @@ public class SunFragment extends Fragment {
         return view;
     }
 
-    @OnClick({R.id.moonButton})
-    public void onClickMoonButton(View view) {
-        ((MainActivity) getActivity()).setViewPager(0);
-    }
-
-    @OnClick({R.id.sunButton})
-    public void onClickSunButton(View view) {
-        ((MainActivity) getActivity()).setViewPager(1);
-    }
-
     @SuppressLint("SetTextI18n")
     public void reloadSunFragment() {
         astroCalculator = ((MainActivity) getActivity()).getAstro();
-        sunrise.setText(astroCalculator.getSunInfo().getSunrise().toString());
+        sunrise.setText(formatDate(astroCalculator.getSunInfo().getSunrise()));
         sunriseAzimuth.setText(((Double) astroCalculator.getSunInfo().getAzimuthRise()).toString());
-        sunset.setText(astroCalculator.getSunInfo().getSunset().toString());
+        sunset.setText(formatDate(astroCalculator.getSunInfo().getSunset()));
         sunsetAzimuth.setText(((Double) astroCalculator.getSunInfo().getAzimuthSet()).toString());
-        civilSunrise.setText(astroCalculator.getSunInfo().getTwilightMorning().toString());
-        civilSunset.setText(astroCalculator.getSunInfo().getTwilightEvening().toString());
+        civilSunrise.setText(formatDate(astroCalculator.getSunInfo().getTwilightMorning()));
+        civilSunset.setText(formatDate(astroCalculator.getSunInfo().getTwilightEvening()));
+    }
+
+    private String formatDate(AstroDateTime astroDateTime) {
+        String _hours = addZero(((Integer) astroDateTime.getHour()).toString());
+        String _minutes = addZero(((Integer) astroDateTime.getMinute()).toString());
+        String _seconds = addZero(((Integer) astroDateTime.getSecond()).toString());
+        String _days = addZero(((Integer) astroDateTime.getDay()).toString());
+        String _months = addZero(((Integer) astroDateTime.getMonth()).toString());
+        String _years = addZero(((Integer) astroDateTime.getYear()).toString());
+        return _hours + ":" + _minutes + ":" + _seconds + " " + _days + "." + _months + '.' + _years;
+    }
+
+    private String addZero(String value) {
+        return value.length() == 1 ? "0" + value : value;
     }
 
 }

@@ -11,6 +11,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.astrocalculator.AstroCalculator;
+import com.astrocalculator.AstroDateTime;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -25,10 +26,6 @@ public class MoonFragment extends Fragment {
     public static final String TAG = "Moon";
     AstroCalculator astroCalculator;
 
-    @BindView(R.id.moonButton)
-    Button moonButton;
-    @BindView(R.id.sunButton)
-    Button sunButton;
     @BindView(R.id.moonRise)
     TextView moonRise;
     @BindView(R.id.moonSet)
@@ -52,26 +49,29 @@ public class MoonFragment extends Fragment {
         return view;
     }
 
-    @OnClick({R.id.moonButton})
-    public void onClickMoonButton(View view) {
-        ((MainActivity) getActivity()).setViewPager(0);
-
-    }
-
-    @OnClick({R.id.sunButton})
-    public void onClickSunButton(View view) {
-        ((MainActivity) getActivity()).setViewPager(1);
-    }
-
     @SuppressLint("SetTextI18n")
     public void reloadMoonFragment() {
         astroCalculator = ((MainActivity) getActivity()).getAstro();
-        moonRise.setText(astroCalculator.getMoonInfo().getMoonrise().toString());
-        moonSet.setText(astroCalculator.getMoonInfo().getMoonset().toString());
-        nextNewMoon.setText(astroCalculator.getMoonInfo().getNextNewMoon().toString());
-        nextFullMoon.setText(astroCalculator.getMoonInfo().getNextFullMoon().toString());
+        moonRise.setText(formatDate(astroCalculator.getMoonInfo().getMoonrise()));
+        moonSet.setText(formatDate(astroCalculator.getMoonInfo().getMoonset()));
+        nextNewMoon.setText(formatDate(astroCalculator.getMoonInfo().getNextNewMoon()));
+        nextFullMoon.setText(formatDate(astroCalculator.getMoonInfo().getNextFullMoon()));
         illumination.setText(((Double) astroCalculator.getMoonInfo().getIllumination()).toString());
         monthAge.setText(((Double) astroCalculator.getMoonInfo().getAge()).toString());
+    }
+
+    private String formatDate(AstroDateTime astroDateTime) {
+        String _hours = addZero(((Integer) astroDateTime.getHour()).toString());
+        String _minutes = addZero(((Integer) astroDateTime.getMinute()).toString());
+        String _seconds = addZero(((Integer) astroDateTime.getSecond()).toString());
+        String _days = addZero(((Integer) astroDateTime.getDay()).toString());
+        String _months = addZero(((Integer) astroDateTime.getMonth()).toString());
+        String _years = addZero(((Integer) astroDateTime.getYear()).toString());
+        return _hours + ":" + _minutes + ":" + _seconds + " " + _days + "." + _months + '.' + _years;
+    }
+
+    private String addZero(String value) {
+        return value.length() == 1 ? "0" + value : value;
     }
 
 }
