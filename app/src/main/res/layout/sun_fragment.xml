@@ -4,11 +4,8 @@
     android:layout_height="match_parent">
 
     <TableLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
         <TableRow
             android:layout_width="match_parent"
             android:layout_height="match_parent" >
@@ -21,7 +18,7 @@
 
             <Button
                 android:id="@+id/moonButton"
-                android:layout_width="181dp"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:text="@string/moon"/>
         </TableRow>
@@ -37,7 +34,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/sunriseTime"
+                android:id="@+id/sunrise"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
@@ -77,7 +74,7 @@
                 android:textSize="18sp"
                 android:textStyle="bold" />
             <TextView
-                android:id="@+id/sunsetTime"
+                android:id="@+id/sunset"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text=""
