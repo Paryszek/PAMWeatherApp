@@ -9,8 +9,8 @@
     <string name="sunrisename">sunrise</string>
     <string name="azimuthname">azimuth</string>
     <string name="sunsetname">sunset</string>
-    <string name="civilsunrisename">civil sunrise</string>
-    <string name="civilsunsetname">civil sunset</string>
+    <string name="twilightsunrisename">twilight sunrise</string>
+    <string name="twilightsunsetname">twilight sunset</string>
     <string name="moon">Moon</string>
     <string name="sun">Sun</string>
     <string name="zatwierdz">Refresh</string>

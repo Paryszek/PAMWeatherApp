@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initAstro();
         viewPager = findViewById(R.id.container);
+//        viewPager.setOffscreenPageLimit(6);
         setupViewPager(viewPager);
     }
 
@@ -123,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
         String _seconds = addZero(((Integer) astroDateTime.getSeconds()).toString());
         clock.setText(_hours + ":" + _minutes + ":" + _seconds);
     }
+
     private boolean validation(int value, String type) {
         switch (type) {
             case "latidute":
@@ -149,6 +151,7 @@ public class MainActivity extends AppCompatActivity {
         _fragmentAdapter.addFragment(new MoonFragment(), "Moon");
         _fragmentAdapter.addFragment(new SunFragment(), "Sun");
         viewPager.setAdapter(_fragmentAdapter);
+//        viewPager.setOffscreenPageLimit(2);
     }
     @SuppressLint("SetTextI18n")
     private void initAstro() {

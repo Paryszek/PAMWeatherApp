@@ -47,7 +47,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:hint="@string/latitude"
-                        android:inputType="number"
+                        android:inputType="numberDecimal|numberSigned"
                         android:textSize="13sp" />
                 </android.support.design.widget.TextInputLayout>
 
@@ -64,7 +64,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:hint="@string/longitude"
-                        android:inputType="number"
+                        android:inputType="numberDecimal|numberSigned"
                         android:textSize="13sp" />
                 </android.support.design.widget.TextInputLayout>
                 <android.support.design.widget.TextInputLayout

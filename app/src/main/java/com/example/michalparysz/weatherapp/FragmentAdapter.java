@@ -20,6 +20,10 @@ public class FragmentAdapter extends FragmentStatePagerAdapter{
     public int getCount() {
         return mFragmentList.size();
     }
+//    @Override
+//    public float getPageWidth(int position) {
+//        return(0.5f);
+//    }
     public void addFragment(Fragment fragment, String title) {
         mFragmentList.add(fragment);
         mFragmentTitleList.add(title);
