@@ -23,7 +23,6 @@ import butterknife.OnClick;
  * Created by michalparysz on 27.04.2018.
  */
 
-
 public class MoonFragment extends Fragment {
     public static final String TAG = "Moon";
     AstroCalculator astroCalculator;

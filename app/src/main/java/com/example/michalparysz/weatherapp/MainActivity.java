@@ -52,7 +52,6 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         initAstro();
         viewPager = findViewById(R.id.container);
-//        viewPager.setOffscreenPageLimit(6);
         setupViewPager(viewPager);
     }
 
@@ -150,9 +149,12 @@ public class MainActivity extends AppCompatActivity {
         _fragmentAdapter = new FragmentAdapter(getSupportFragmentManager());
         _fragmentAdapter.addFragment(new MoonFragment(), "Moon");
         _fragmentAdapter.addFragment(new SunFragment(), "Sun");
+        _fragmentAdapter.addFragment(new WeatherFragment(), "Weather");
+        _fragmentAdapter.addFragment(new AddWeatherFragment(), "AddWeather");
+        _fragmentAdapter.addFragment(new ForecastWeatherFragment(), "ForecastWeather");
         viewPager.setAdapter(_fragmentAdapter);
-//        viewPager.setOffscreenPageLimit(2);
     }
+
     @SuppressLint("SetTextI18n")
     private void initAstro() {
         _refreshPeriod = 10000;
