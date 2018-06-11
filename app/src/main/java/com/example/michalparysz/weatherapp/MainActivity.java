@@ -1,22 +1,26 @@
 package com.example.michalparysz.weatherapp;
 
 import android.annotation.SuppressLint;
-import android.os.CountDownTimer;
+import android.support.v4.app.FragmentManager;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.support.design.widget.TextInputLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.astrocalculator.AstroCalculator;
 import com.astrocalculator.AstroDateTime;
+import com.example.michalparysz.weatherapp.Fragments.*;
+import com.example.michalparysz.weatherapp.Network.DownloadCallback;
+import com.example.michalparysz.weatherapp.Network.NetworkFragment;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Objects;
@@ -27,10 +31,18 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements DownloadCallback {
     private static AstroCalculator astroCalculator;
     private FragmentAdapter _fragmentAdapter;
     private ViewPager viewPager;
+    // Keep a reference to the NetworkFragment, which owns the AsyncTask object
+    // that is used to execute network ops.
+    private NetworkFragment mNetworkFragment;
+
+    // Boolean telling us whether a download is in progress, so we don't trigger overlapping
+    // downloads with consecutive button clicks.
+    private boolean mDownloading = false;
+
     private int _latitude;
     private int _longitude;
     private int _refreshPeriod;
@@ -82,21 +94,62 @@ public class MainActivity extends AppCompatActivity {
         },0, 1000);
     }
 
+    @Override
+    public void updateFromDownload(String result) {
+        // Update your UI here based on result of download.
+    }
+
+    @Override
+    public NetworkInfo getActiveNetworkInfo() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return networkInfo;
+    }
+
+    @Override
+    public void onProgressUpdate(int progressCode, int percentComplete) {
+        switch(progressCode) {
+            // You can add UI behavior for progress updates here.
+            case Progress.ERROR:
+            //
+                break;
+            case Progress.CONNECT_SUCCESS:
+            //
+                break;
+            case Progress.GET_INPUT_STREAM_SUCCESS:
+            //
+                break;
+            case Progress.PROCESS_INPUT_STREAM_IN_PROGRESS:
+            //
+                break;
+            case Progress.PROCESS_INPUT_STREAM_SUCCESS:
+            //
+                break;
+        }
+    }
+
+    @Override
+    public void finishDownloading() {
+        mDownloading = false;
+        if (mNetworkFragment != null) {
+            mNetworkFragment.cancelDownload();
+        }
+    }
+
+    public void startDownload() {
+        if (!mDownloading && mNetworkFragment != null) {
+            // Execute the async download.
+            mNetworkFragment.startDownload();
+            mDownloading = true;
+        }
+    }
+
     public AstroCalculator getAstro() {
         return astroCalculator;
     }
     public void setViewPager(int fragmentNumber) {
         viewPager.setCurrentItem(fragmentNumber);
-    }
-
-    @OnClick({R.id.moonButton})
-    public void onClickMoonButton(View view) {
-        setViewPager(0);
-    }
-
-    @OnClick({R.id.sunButton})
-    public void onClickSunButton(View view) {
-        setViewPager(1);
     }
 
     @OnClick(R.id.zatwierdz)
@@ -146,7 +199,9 @@ public class MainActivity extends AppCompatActivity {
         sunFragment.reloadSunFragment();
     }
     private void setupViewPager(ViewPager viewPager) {
-        _fragmentAdapter = new FragmentAdapter(getSupportFragmentManager());
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mNetworkFragment = NetworkFragment.getInstance(fragmentManager, "http://api.apixu.com/v1/current.json");
+        _fragmentAdapter = new FragmentAdapter(fragmentManager);
         _fragmentAdapter.addFragment(new MoonFragment(), "Moon");
         _fragmentAdapter.addFragment(new SunFragment(), "Sun");
         _fragmentAdapter.addFragment(new WeatherFragment(), "Weather");

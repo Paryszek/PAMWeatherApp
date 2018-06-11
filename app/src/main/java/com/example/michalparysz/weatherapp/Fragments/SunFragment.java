@@ -1,4 +1,4 @@
-package com.example.michalparysz.weatherapp;
+package com.example.michalparysz.weatherapp.Fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -11,6 +11,8 @@ import android.widget.TextView;
 
 import com.astrocalculator.AstroCalculator;
 import com.astrocalculator.AstroDateTime;
+import com.example.michalparysz.weatherapp.MainActivity;
+import com.example.michalparysz.weatherapp.R;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;

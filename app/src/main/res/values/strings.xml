@@ -13,7 +13,7 @@
     <string name="twilightsunsetname">twilight sunset</string>
     <string name="moon">Moon</string>
     <string name="sun">Sun</string>
-    <string name="zatwierdz">Refresh</string>
+    <string name="zatwierdz">Accept</string>
     <string name="longitude">longitude</string>
     <string name="latitude">latitude</string>
     <string name="refresh">refresh period</string>

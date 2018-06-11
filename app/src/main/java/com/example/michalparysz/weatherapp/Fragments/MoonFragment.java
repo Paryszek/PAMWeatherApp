@@ -1,4 +1,4 @@
-package com.example.michalparysz.weatherapp;
+package com.example.michalparysz.weatherapp.Fragments;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.astrocalculator.AstroCalculator;
 import com.astrocalculator.AstroDateTime;
+import com.example.michalparysz.weatherapp.MainActivity;
+import com.example.michalparysz.weatherapp.R;
 
 import java.util.Objects;
 
@@ -52,6 +54,7 @@ public class MoonFragment extends Fragment {
 
     @SuppressLint("SetTextI18n")
     public void reloadMoonFragment() {
+        try {
             astroCalculator = ((MainActivity) getActivity()).getAstro();
             moonRise.setText(formatDate(astroCalculator.getMoonInfo().getMoonrise()));
             moonSet.setText(formatDate(astroCalculator.getMoonInfo().getMoonset()));
@@ -59,6 +62,7 @@ public class MoonFragment extends Fragment {
             nextFullMoon.setText(formatDate(astroCalculator.getMoonInfo().getNextFullMoon()));
             illumination.setText(((Double) astroCalculator.getMoonInfo().getIllumination()).toString());
             monthAge.setText(((Double) astroCalculator.getMoonInfo().getAge()).toString());
+        } catch (Exception e) {}
     }
 
     private String formatDate(AstroDateTime astroDateTime) {
