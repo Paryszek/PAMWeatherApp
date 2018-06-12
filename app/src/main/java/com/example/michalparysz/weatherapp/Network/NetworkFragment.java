@@ -1,28 +1,30 @@
 package com.example.michalparysz.weatherapp.Network;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.constraint.ConstraintLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.widget.ProgressBar;
 
 import com.example.michalparysz.weatherapp.MainActivity;
+import com.example.michalparysz.weatherapp.Models.Weather.Weather;
 import com.example.michalparysz.weatherapp.R;
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +36,7 @@ import javax.net.ssl.HttpsURLConnection;
 import static com.example.michalparysz.weatherapp.Network.NetworkFragment.mUrlString;
 
 public class NetworkFragment extends Fragment {
+
     public static final String TAG = "NetworkFragment";
 
     private static final String URL_KEY = "7214cc918a3244bfa71224638181006";
@@ -114,15 +117,14 @@ public class NetworkFragment extends Fragment {
  */
 
 class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
+    private DownloadCallback<Weather> mCallback;
 
-    private DownloadCallback<String> mCallback;
-
-    public DownloadTask(DownloadCallback<String> callback) {
+    public DownloadTask(DownloadCallback<Weather> callback) {
         setCallback(callback);
     }
 
 
-    void setCallback(DownloadCallback<String> callback) {
+    void setCallback(DownloadCallback<Weather> callback) {
         mCallback = callback;
     }
 
@@ -145,6 +147,8 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
     /**
      * Cancel background network operation if we do not have network connectivity.
      */
+
+
     @Override
     protected void onPreExecute() {
         if (mCallback != null) {
@@ -163,25 +167,21 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
      * Defines work to perform on the background thread.
      */
     @Override
-    protected DownloadTask.Result doInBackground(String... params) {
-        Result result = null;
+    protected Result doInBackground(String... params) {
+        Weather weather = null;
         List<String> urls = new ArrayList<>();
         urls.add(mUrlString);
         if (!isCancelled() && !urls.isEmpty()) {
             String urlString = urls.get(0);
             try {
                 URL url = new URL("https://api.apixu.com/v1/current.json?key=7214cc918a3244bfa71224638181006&q=Paris");
-                String resultString = downloadUrl(url);
-                if (resultString != null) {
-                    result = new Result(resultString);
-                } else {
-                    throw new IOException("No response received.");
-                }
+                weather = downloadUrl(url);
+                mCallback.updateFromDownload(weather);
             } catch(Exception e) {
-                result = new Result(e);
+                e.printStackTrace();
             }
         }
-        return result;
+        return new Result("");
     }
 
     /**
@@ -189,10 +189,10 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
      * If the network request is successful, it returns the response body in String form. Otherwise,
      * it will throw an IOException.
      */
-    private String downloadUrl(URL url) throws IOException {
+    private Weather downloadUrl(URL url) throws IOException {
         InputStream stream = null;
         HttpsURLConnection connection = null;
-        String result = null;
+        Weather result = new Weather();
         try {
             connection = (HttpsURLConnection) url.openConnection();
             // Timeout for reading InputStream arbitrarily set to 3000ms.
@@ -216,7 +216,7 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
             publishProgress(DownloadCallback.Progress.GET_INPUT_STREAM_SUCCESS, 0);
             if (stream != null) {
                 // Converts Stream to String with max length of 500.
-                result = readStream(stream, 500);
+                result = readStream(stream);
             }
         } finally {
             // Close Stream and disconnect HTTPS connection.
@@ -230,22 +230,17 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
         return result;
     }
 
-    String readStream(InputStream stream, int maxReadSize)
+    Weather readStream(InputStream stream)
             throws IOException, UnsupportedEncodingException {
-        Reader reader = null;
-        reader = new InputStreamReader(stream, "UTF-8");
-        char[] rawBuffer = new char[maxReadSize];
-        int readSize;
-        StringBuffer buffer = new StringBuffer();
-        while (((readSize = reader.read(rawBuffer)) != -1) && maxReadSize > 0) {
-            if (readSize > maxReadSize) {
-                readSize = maxReadSize;
-            }
-            buffer.append(rawBuffer, 0, readSize);
-            maxReadSize -= readSize;
+        Reader reader = new InputStreamReader(stream, "UTF-8");
+        Gson g = new Gson();
+        Weather w = new Weather();
+        try {
+            w = g.fromJson(reader, Weather.class);
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
         }
-        String data = buffer.toString();
-        return buffer.toString();
+        return w;
     }
 
     /**
@@ -255,9 +250,9 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
     protected void onPostExecute(Result result) {
         if (result != null && mCallback != null) {
             if (result.mException != null) {
-                mCallback.updateFromDownload(result.mException.getMessage());
+                mCallback.updateFromDownload(new Weather());
             } else if (result.mResultValue != null) {
-                mCallback.updateFromDownload(result.mResultValue);
+                mCallback.updateFromDownload(new Weather());
             }
             mCallback.finishDownloading();
         }

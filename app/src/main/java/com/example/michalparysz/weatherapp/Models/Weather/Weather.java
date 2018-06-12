@@ -1,7 +1,6 @@
 package com.example.michalparysz.weatherapp.Models.Weather;
 
-public class Weather
-{
+public class Weather {
     private Location location;
 
     private Current current;

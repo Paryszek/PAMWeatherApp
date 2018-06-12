@@ -9,12 +9,14 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.astrocalculator.AstroCalculator;
 import com.astrocalculator.AstroDateTime;
 import com.example.michalparysz.weatherapp.Fragments.*;
+import com.example.michalparysz.weatherapp.Models.Weather.Weather;
 import com.example.michalparysz.weatherapp.Network.DownloadCallback;
 import com.example.michalparysz.weatherapp.Network.NetworkFragment;
 
@@ -53,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     TextInputLayout longitudeInput;
     @BindView(R.id.refreshInput)
     TextInputLayout refreshInput;
-
     @BindView(R.id.clock)
     TextView clock;
 
@@ -88,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 runOnUiThread(new Runnable() {
                     public void run() {
                         updateClock();
+                        startDownload();
                     }
                 });
             }
@@ -95,8 +97,14 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     }
 
     @Override
-    public void updateFromDownload(String result) {
+    public void updateFromDownload(final Weather weather) {
         // Update your UI here based on result of download.
+        runOnUiThread(new Runnable() {
+            public void run() {
+                WeatherFragment  weatherFragment = (WeatherFragment) _fragmentAdapter.getItem(2);
+                weatherFragment.reloadViewFragment(weather);
+            }
+        });
     }
 
     @Override
@@ -168,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
             }
         } catch (NumberFormatException e) {}
     }
+
     @SuppressLint("SetTextI18n")
     private void updateClock() {
         Date astroDateTime = new Date();

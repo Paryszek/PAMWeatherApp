@@ -2,6 +2,8 @@ package com.example.michalparysz.weatherapp.Network;
 
 import android.net.NetworkInfo;
 
+import com.example.michalparysz.weatherapp.Models.Weather.Weather;
+
 public interface DownloadCallback<T> {
     interface Progress {
         int ERROR = -1;
@@ -17,7 +19,7 @@ public interface DownloadCallback<T> {
      */
 //    void updateFromDownload(T result);
 
-    void updateFromDownload(String result);
+    void updateFromDownload(Weather weather);
 
     /**
      * Get the device's active network status in the form of a NetworkInfo object.
