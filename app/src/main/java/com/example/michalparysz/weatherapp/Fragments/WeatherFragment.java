@@ -14,6 +14,7 @@ import com.example.michalparysz.weatherapp.Models.Weather.Weather;
 import com.example.michalparysz.weatherapp.R;
 import com.squareup.picasso.Picasso;
 
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -34,7 +35,18 @@ public class WeatherFragment extends Fragment {
     TextView hpa;
     @BindView(R.id.weatherIcon)
     ImageView weatherIcon;
-
+    @BindView(R.id.country)
+    TextView country;
+    @BindView(R.id.windSpeed)
+    TextView windSpeed;
+    @BindView(R.id.windDegree)
+    TextView windDegree;
+    @BindView(R.id.windDirection)
+    TextView windDirection;
+    @BindView(R.id.humidity)
+    TextView humidity;
+    @BindView(R.id.visibility)
+    TextView visibility;
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,10 +64,16 @@ public class WeatherFragment extends Fragment {
         if (weather.getLocation() != null) {
             try {
                 cityname.setText(weather.getLocation().getName());
+                country.setText(weather.getLocation().getCountry());
                 lat.setText(weather.getLocation().getLat() + "°");
                 lon.setText(weather.getLocation().getLon() + "°");
                 temp.setText(weather.getCurrent().getTemp_c() + "° C");
-                hpa.setText(weather.getCurrent().getPressure_in() + " hPa");
+                hpa.setText(weather.getCurrent().getPressure_mb() + " hPa");
+                windSpeed.setText(weather.getCurrent().getWind_kph() + " KPH");
+                windDirection.setText(weather.getCurrent().getWind_dir());
+                windDegree.setText(weather.getCurrent().getWind_degree() + "°");
+                humidity.setText(weather.getCurrent().getHumidity() + "%");
+                visibility.setText(weather.getCurrent().getVis_km() + "KM");
                 Picasso.get().load("http:" + weather.getCurrent().getCondition().getIcon()).into(weatherIcon);
             } catch (Exception e) {
                 e.printStackTrace();

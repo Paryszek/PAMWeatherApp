@@ -9,6 +9,7 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -48,6 +49,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     private int _latitude;
     private int _longitude;
     private int _refreshPeriod;
+    public static String currentCity;
 
     @BindView(R.id.latitudeInput)
     TextInputLayout latiduteInput;
@@ -57,6 +59,8 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     TextInputLayout refreshInput;
     @BindView(R.id.clock)
     TextView clock;
+    @BindView(R.id.cityInput)
+    TextInputLayout cityInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,8 +105,10 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         // Update your UI here based on result of download.
         runOnUiThread(new Runnable() {
             public void run() {
-                WeatherFragment  weatherFragment = (WeatherFragment) _fragmentAdapter.getItem(2);
-                weatherFragment.reloadViewFragment(weather);
+                if (!weather.getLocation().getName().equals("")) {
+                    WeatherFragment weatherFragment = (WeatherFragment) _fragmentAdapter.getItem(2);
+                    weatherFragment.reloadViewFragment(weather);
+                }
             }
         });
     }
@@ -166,10 +172,12 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
             int latV = Integer.parseInt(Objects.requireNonNull(latiduteInput.getEditText()).getText().toString());
             int longV = Integer.parseInt(Objects.requireNonNull(longitudeInput.getEditText()).getText().toString());
             int refreshV = Integer.parseInt(Objects.requireNonNull(refreshInput.getEditText()).getText().toString());
-            if (validation(latV, "latidute") && validation(longV, "longitude") && validation(refreshV, "refreshPeriod")) {
+            String cityName = Objects.requireNonNull(cityInput.getEditText()).getText().toString();
+            if (validation(latV, "latidute") && validation(longV, "longitude") && validation(refreshV, "refreshPeriod") && !cityName.isEmpty()) {
                 _latitude = latV;
                 _longitude = longV;
                 _refreshPeriod = refreshV;
+                currentCity = cityName;
                 reloadView();
             } else {
                 Toast.makeText(this, "Wrong inputs, please try again", Toast.LENGTH_LONG).show();
@@ -214,7 +222,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         _fragmentAdapter.addFragment(new MoonFragment(), "Moon");
         _fragmentAdapter.addFragment(new SunFragment(), "Sun");
         _fragmentAdapter.addFragment(new WeatherFragment(), "Weather");
-        _fragmentAdapter.addFragment(new AddWeatherFragment(), "AddWeather");
         _fragmentAdapter.addFragment(new ForecastWeatherFragment(), "ForecastWeather");
         viewPager.setAdapter(_fragmentAdapter);
     }

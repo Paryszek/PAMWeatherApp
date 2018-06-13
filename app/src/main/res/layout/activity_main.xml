@@ -98,7 +98,8 @@
             <android.support.design.widget.TextInputEditText
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:hint="@string/latitude"
+            android:hint="@string/current_cityname"
+            android:text="Warsaw"
             android:inputType="numberDecimal|numberSigned"
             android:textSize="13sp" />
         </android.support.design.widget.TextInputLayout>

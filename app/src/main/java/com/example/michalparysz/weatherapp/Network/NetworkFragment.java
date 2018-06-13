@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import static com.example.michalparysz.weatherapp.MainActivity.currentCity;
 import static com.example.michalparysz.weatherapp.Network.NetworkFragment.mUrlString;
 
 public class NetworkFragment extends Fragment {
@@ -174,7 +175,7 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
         if (!isCancelled() && !urls.isEmpty()) {
             String urlString = urls.get(0);
             try {
-                URL url = new URL("https://api.apixu.com/v1/current.json?key=7214cc918a3244bfa71224638181006&q=Paris");
+                URL url = new URL("https://api.apixu.com/v1/current.json?key=7214cc918a3244bfa71224638181006&q=" + currentCity);
                 weather = downloadUrl(url);
                 mCallback.updateFromDownload(weather);
             } catch(Exception e) {
