@@ -8,6 +8,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import java.util.Objects;
@@ -25,11 +26,14 @@ public class SettingsActivity extends AppCompatActivity {
     TextInputLayout refreshInput;
     @BindView(R.id.cityInput)
     TextInputLayout cityInput;
+    @BindView(R.id.reloadWeatherCheckBox)
+    CheckBox reloadWeatherCheckBox;
 
     private String latitude = "0";
     private String longitude = "0";
     private String refreshPeriod = "60000";
     private String currentCity = "Warsaw";
+    private String reloadWeather = "false";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +79,9 @@ public class SettingsActivity extends AppCompatActivity {
                 intent.putExtra("latitude", latitude);
                 intent.putExtra("longitude", longitude);
                 intent.putExtra("refreshPeriod" ,refreshPeriod);
+                if (reloadWeatherCheckBox.isChecked()) {
+                    intent.putExtra("reloadWeather", true);
+                }
                 setResult(RESULT_OK, intent);
                 finish();
                 return true;

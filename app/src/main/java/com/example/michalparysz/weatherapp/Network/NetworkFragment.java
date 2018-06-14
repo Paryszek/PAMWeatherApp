@@ -35,20 +35,17 @@ import java.util.concurrent.Executors;
 
 import javax.net.ssl.HttpsURLConnection;
 
+import static com.example.michalparysz.weatherapp.MainActivity.apiKey;
 import static com.example.michalparysz.weatherapp.MainActivity.currentCity;
 import static com.example.michalparysz.weatherapp.MainActivity.latitude;
 import static com.example.michalparysz.weatherapp.MainActivity.longitude;
-import static com.example.michalparysz.weatherapp.Network.NetworkFragment.mUrlString;
 
 public class NetworkFragment extends Fragment {
 
     public static final String TAG = "NetworkFragment";
-
-    private static final String URL_KEY = "7214cc918a3244bfa71224638181006";
     private static ExecutorService FULL_TASK_EXECUTOR;
     private DownloadCallback mCallback;
     private DownloadTask mDownloadTask;
-    public static String mUrlString;
     static {
         FULL_TASK_EXECUTOR = (ExecutorService) Executors.newCachedThreadPool();
     }
@@ -56,11 +53,8 @@ public class NetworkFragment extends Fragment {
      * Static initializer for NetworkFragment that sets the URL of the host it will be downloading
      * from.
      */
-    public static NetworkFragment getInstance(FragmentManager fragmentManager, String url) {
+    public static NetworkFragment getInstance(FragmentManager fragmentManager) {
         NetworkFragment networkFragment = new NetworkFragment();
-        Bundle args = new Bundle();
-        args.putString(URL_KEY, url);
-        networkFragment.setArguments(args);
         fragmentManager.beginTransaction().add(networkFragment, TAG).commit();
         return networkFragment;
     }
@@ -68,7 +62,6 @@ public class NetworkFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mUrlString = getArguments().getString(URL_KEY);
 
     }
 
@@ -165,11 +158,11 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
                 URL urlWeather = null;
                 URL urlForecast = null;
                 if (!currentCity.isEmpty()) {
-                    urlWeather = new URL("https://api.apixu.com/v1/current.json?key=ab34da598a0c40d2a96223124181306&q=" + currentCity);
-                    urlForecast = new URL("https://api.apixu.com/v1/forecast.json?key=ab34da598a0c40d2a96223124181306&q=" + currentCity + "&days=5");
+                    urlWeather = new URL("https://api.apixu.com/v1/current.json?key=" + apiKey + "&q=" + currentCity);
+                    urlForecast = new URL("https://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + currentCity + "&days=5");
                 } else {
-                    urlWeather = new URL("https://api.apixu.com/v1/current.json?key=ab34da598a0c40d2a96223124181306&q=" + latitude + "," + longitude);
-                    urlForecast = new URL("https://api.apixu.com/v1/forecast.json?key=ab34da598a0c40d2a96223124181306&q=" + latitude + "," + longitude);
+                    urlWeather = new URL("https://api.apixu.com/v1/current.json?key=" + apiKey + "&q=" + latitude + "," + longitude);
+                    urlForecast = new URL("https://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + latitude + "," + longitude);
                 }
                 result = new Result(downloadUrlWeather(urlWeather), downloadUrlForecast(urlForecast));
                 mCallback.updateFromDownload(result);

@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     public static int latitude = 0;
     public static int longitude = 0;
     public static String currentCity = "Warsaw";
+    public static String apiKey = "51a2f4e99a2d4df5a5612051181406";
 
     private int refreshPeriod = 60000;
     private  AstroCalculator astroCalculator;
@@ -87,6 +88,11 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 }
                 if (data.hasExtra("refreshPeriod")) {
                     refreshPeriod = Integer.parseInt(data.getStringExtra("refreshPeriod"));
+                }
+                if (data.hasExtra("reloadWeather")) {
+                    if(data.getBooleanExtra("reloadWeather", false)) {
+                        startDownload();
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -253,7 +259,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     }
     private void setupViewPager(ViewPager viewPager) {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        mNetworkFragment = NetworkFragment.getInstance(fragmentManager, "http://api.apixu.com/v1/current.json");
+        mNetworkFragment = NetworkFragment.getInstance(fragmentManager);
         _fragmentAdapter = new FragmentAdapter(fragmentManager);
         _fragmentAdapter.addFragment(new WeatherFragment(), "Weather");
         _fragmentAdapter.addFragment(new ForecastWeatherFragment(), "ForecastWeather");
