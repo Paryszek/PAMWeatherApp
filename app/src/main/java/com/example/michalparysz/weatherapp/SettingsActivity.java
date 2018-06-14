@@ -8,9 +8,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 import butterknife.BindView;
@@ -28,21 +33,43 @@ public class SettingsActivity extends AppCompatActivity {
     TextInputLayout cityInput;
     @BindView(R.id.reloadWeatherCheckBox)
     CheckBox reloadWeatherCheckBox;
+    @BindView(R.id.cities)
+    ListView citiesList;
+    @BindView(R.id.imunitsCheckBox)
+    CheckBox imunitsCheckBox;
 
     private String latitude = "0";
     private String longitude = "0";
     private String refreshPeriod = "60000";
     private String currentCity = "Warsaw";
     private String reloadWeather = "false";
+    ArrayList<String> citiesArray;
+    ArrayAdapter<String> citiesAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.settings_activity);
         ButterKnife.bind(this);
+        initListView();
         checkForValuesFromParentActivity();
         setupToolBar();
         initValues();
+    }
+
+    private void initListView() {
+        citiesArray = getCitiesFromFile();
+        citiesAdapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_activated_1, citiesArray);
+        citiesList.setAdapter(citiesAdapter);
+
+        citiesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                Objects.requireNonNull(cityInput.getEditText()).setText(citiesArray.get(i));
+                currentCity = citiesArray.get(i);
+            }
+        });
+
     }
 
     private void checkForValuesFromParentActivity() {
@@ -50,8 +77,18 @@ public class SettingsActivity extends AppCompatActivity {
         if (extras != null) {
             try {
                 currentCity = extras.getString("currentCity");
+                if (noDuplicates(currentCity, citiesArray)) {
+                    citiesArray.add(currentCity);
+                    citiesAdapter.notifyDataSetChanged();
+                    saveCitiesToFile();
+                }
                 latitude = extras.getString("latitude");
                 longitude = extras.getString("longitude");
+                if(extras.getBoolean("imUnits", false)) {
+                    imunitsCheckBox.setChecked(true);
+                } else {
+                    imunitsCheckBox.setChecked(false);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -82,6 +119,11 @@ public class SettingsActivity extends AppCompatActivity {
                 if (reloadWeatherCheckBox.isChecked()) {
                     intent.putExtra("reloadWeather", true);
                 }
+                if (imunitsCheckBox.isChecked()) {
+                    intent.putExtra("imUnits", true);
+                } else {
+                    intent.putExtra("imUnits", false);
+                }
                 setResult(RESULT_OK, intent);
                 finish();
                 return true;
@@ -103,10 +145,20 @@ public class SettingsActivity extends AppCompatActivity {
                 currentCity = cityName;
             } else {
                 android.widget.Toast.makeText(getBaseContext(), "Wrong inputs, please try again", Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), "Wrong inputs, please try again", Toast.LENGTH_LONG).show();
             }
         } catch (NumberFormatException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean noDuplicates(String cityName, ArrayList<String> cities) {
+        for (String city : cities) {
+            if(city.toLowerCase().equals(cityName.toLowerCase())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void setupToolBar() {
@@ -128,5 +180,16 @@ public class SettingsActivity extends AppCompatActivity {
                 break;
         }
         return false;
+    }
+
+    public ArrayList<String> getCitiesFromFile() {
+        ArrayList<String> citiesFromFile = new ArrayList<>();
+        citiesFromFile.add("Paris");
+        citiesFromFile.add("London");
+        citiesFromFile.add("Berlin");
+        return citiesFromFile;
+    }
+
+    private void saveCitiesToFile() {
     }
 }

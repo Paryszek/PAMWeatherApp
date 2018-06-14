@@ -141,7 +141,8 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
                 // If no connectivity, cancel task and update Callback with null data.
 
                 // tutaj pobrac z pliku
-                mCallback.noConnectionError();
+                mCallback.updateFromDownload(getFromFile());
+                mCallback.stopDownloading("No internet connection");
                 cancel(true);
             }
         }
@@ -184,14 +185,15 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
         Weather result = new Weather();
         try {
             connection = (HttpsURLConnection) url.openConnection();
-            connection.setReadTimeout(3000);
-            connection.setConnectTimeout(3000);
+            connection.setReadTimeout(6000);
+            connection.setConnectTimeout(6000);
             connection.setRequestMethod("GET");
             connection.setDoInput(true);
             connection.connect();
             publishProgress(DownloadCallback.Progress.CONNECT_SUCCESS);
             if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
-                mCallback.stopDownloading();
+//                mCallback.updateFromDownload(getFromFile());
+                mCallback.stopDownloading("Weather Api not responding");
                 throw new IOException("HTTP error code: " + connection.getResponseCode());
             }
             stream = connection.getInputStream();
@@ -229,14 +231,15 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
         Forecast result = new Forecast();
         try {
             connection = (HttpsURLConnection) url.openConnection();
-            connection.setReadTimeout(3000);
-            connection.setConnectTimeout(3000);
+            connection.setReadTimeout(6000);
+            connection.setConnectTimeout(6000);
             connection.setRequestMethod("GET");
             connection.setDoInput(true);
             connection.connect();
             publishProgress(DownloadCallback.Progress.CONNECT_SUCCESS);
             if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
-                mCallback.stopDownloading();
+//                mCallback.updateFromDownload(getFromFile());
+                mCallback.stopDownloading("Weather Api not responding");
                 throw new IOException("HTTP error code: " + connection.getResponseCode());
             }
             stream = connection.getInputStream();
@@ -283,6 +286,10 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
      */
     @Override
     protected void onCancelled(Result result) {
+    }
+
+    public Result getFromFile() {
+        return new Result();
     }
 }
 

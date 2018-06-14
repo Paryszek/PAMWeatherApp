@@ -18,6 +18,7 @@ import com.squareup.picasso.Picasso;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
+import static com.example.michalparysz.weatherapp.MainActivity.imUnits;
 
 
 public class WeatherFragment extends Fragment {
@@ -47,6 +48,9 @@ public class WeatherFragment extends Fragment {
     TextView humidity;
     @BindView(R.id.visibility)
     TextView visibility;
+
+    private Weather _weather;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -63,22 +67,36 @@ public class WeatherFragment extends Fragment {
     public void reloadViewFragment(Weather weather) {
         if (weather.getLocation() != null) {
             try {
+                _weather = weather;
                 cityname.setText(weather.getLocation().getName());
                 country.setText(weather.getLocation().getCountry());
                 lat.setText(weather.getLocation().getLat() + "°");
                 lon.setText(weather.getLocation().getLon() + "°");
-                temp.setText(weather.getCurrent().getTemp_c() + "° C");
+                if (imUnits)
+                    temp.setText(weather.getCurrent().getTemp_f() + "° F");
+                else
+                    temp.setText(weather.getCurrent().getTemp_c() + "° C");
                 hpa.setText(weather.getCurrent().getPressure_mb() + " hPa");
-                windSpeed.setText("Wind " + weather.getCurrent().getWind_kph() + " KPH");
+                if (imUnits)
+                    windSpeed.setText("Wind " + weather.getCurrent().getWind_mph() + " MPH");
+                else
+                    windSpeed.setText("Wind " + weather.getCurrent().getWind_kph() + " KPH");
                 windDirection.setText(weather.getCurrent().getWind_dir());
                 windDegree.setText(weather.getCurrent().getWind_degree() + "°");
-                humidity.setText("Humidity" + weather.getCurrent().getHumidity() + "%");
-                visibility.setText("Visibility" + weather.getCurrent().getVis_km() + "KM");
+                humidity.setText("Humidity " + weather.getCurrent().getHumidity() + "%");
+                if (imUnits)
+                    visibility.setText("Visibility " + weather.getCurrent().getVis_miles() + "M");
+                else
+                    visibility.setText("Visibility " + weather.getCurrent().getVis_km() + "KM");
                 Picasso.get().load("http:" + weather.getCurrent().getCondition().getIcon()).into(weatherIcon);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void refreashUnits() {
+        reloadViewFragment(_weather);
     }
 
 }

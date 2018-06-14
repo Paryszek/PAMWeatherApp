@@ -23,7 +23,7 @@ public interface DownloadCallback<T> {
     void updateFromDownload(Result result);
 
 //    void updateFromDownload(Weather weather);
-    void stopDownloading();
+    void stopDownloading(String error);
     /**
      * Get the device's active network status in the form of a NetworkInfo object.
      */

@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
 
     public static int latitude = 0;
     public static int longitude = 0;
+    public static Boolean imUnits = false;
     public static String currentCity = "Warsaw";
     public static String apiKey = "51a2f4e99a2d4df5a5612051181406";
 
@@ -91,7 +92,16 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 }
                 if (data.hasExtra("reloadWeather")) {
                     if(data.getBooleanExtra("reloadWeather", false)) {
+                        isDownloading = true;
                         startDownload();
+                    }
+                }
+                if (data.hasExtra("imUnits")) {
+                    if(data.getBooleanExtra("imUnits", false)) {
+                        imUnits = true;
+                        reloadWeatherView();
+                    } else {
+                        imUnits = false;
                     }
                 }
             } catch (Exception e) {
@@ -99,12 +109,14 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
             }
         }
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem menuItem) {
         Intent settings = new Intent(this, SettingsActivity.class);
         settings.putExtra("currentCity", currentCity);
         settings.putExtra("latitude", Integer.valueOf(latitude).toString());
         settings.putExtra("longitude", Integer.valueOf(longitude).toString());
+        settings.putExtra("imUnits", imUnits);
         startActivityForResult(settings, 1);
         return super.onOptionsItemSelected(menuItem);
     }
@@ -173,9 +185,9 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     }
 
     @Override
-    public void stopDownloading() {
+    public void stopDownloading(String error) {
         isDownloading = false;
-        Toast.makeText(getBaseContext(), "Cannot fetch weather data, internet connection problem", Toast.LENGTH_LONG).show();
+        android.widget.Toast.makeText(getBaseContext(), error, Toast.LENGTH_LONG).show();
     }
 
 
@@ -193,6 +205,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
             // You can add UI behavior for progress updates here.
             case Progress.ERROR:
                 android.widget.Toast.makeText(getBaseContext(), "There was problem in downloading the weather, please refresh in settings", Toast.LENGTH_LONG).show();
+                Toast.makeText(getBaseContext(), "There was problem in downloading the weather, please refresh in settings", Toast.LENGTH_LONG).show();
                 break;
             case Progress.CONNECT_SUCCESS:
             //
@@ -219,9 +232,10 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
 
     public void startDownload() {
         if (!mDownloading && mNetworkFragment != null) {
-            // Execute the async download.
             mNetworkFragment.startDownload();
             mDownloading = true;
+        } else {
+            android.widget.Toast.makeText(getBaseContext(), "Downloading...", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -249,13 +263,19 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         clock.setText(_hours + ":" + _minutes + ":" + _seconds);
     }
 
-
     private void reloadView() {
         astroCalculator = new AstroCalculator(getDate(), new AstroCalculator.Location(latitude, longitude));
         MoonFragment moonFragment = (MoonFragment) _fragmentAdapter.getItem(2);
         SunFragment sunFragment = (SunFragment) _fragmentAdapter.getItem(3);
         moonFragment.reloadMoonFragment();
         sunFragment.reloadSunFragment();
+    }
+
+    private void reloadWeatherView() {
+        WeatherFragment weatherFragment = (WeatherFragment) _fragmentAdapter.getItem(0);
+        ForecastWeatherFragment forecastFragment = (ForecastWeatherFragment) _fragmentAdapter.getItem(1);
+        weatherFragment.refreashUnits();
+        // forecastFragment.reloadSunFragment();
     }
     private void setupViewPager(ViewPager viewPager) {
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -265,7 +285,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         _fragmentAdapter.addFragment(new ForecastWeatherFragment(), "ForecastWeather");
         _fragmentAdapter.addFragment(new MoonFragment(), "Moon");
         _fragmentAdapter.addFragment(new SunFragment(), "Sun");
-        _fragmentAdapter.addFragment(new WeatherFragment(), "Weather");
         viewPager.setAdapter(_fragmentAdapter);
     }
 
