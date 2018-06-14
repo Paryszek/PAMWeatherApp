@@ -69,11 +69,11 @@ public class WeatherFragment extends Fragment {
                 lon.setText(weather.getLocation().getLon() + "°");
                 temp.setText(weather.getCurrent().getTemp_c() + "° C");
                 hpa.setText(weather.getCurrent().getPressure_mb() + " hPa");
-                windSpeed.setText(weather.getCurrent().getWind_kph() + " KPH");
+                windSpeed.setText("Wind " + weather.getCurrent().getWind_kph() + " KPH");
                 windDirection.setText(weather.getCurrent().getWind_dir());
                 windDegree.setText(weather.getCurrent().getWind_degree() + "°");
-                humidity.setText(weather.getCurrent().getHumidity() + "%");
-                visibility.setText(weather.getCurrent().getVis_km() + "KM");
+                humidity.setText("Humidity" + weather.getCurrent().getHumidity() + "%");
+                visibility.setText("Visibility" + weather.getCurrent().getVis_km() + "KM");
                 Picasso.get().load("http:" + weather.getCurrent().getCondition().getIcon()).into(weatherIcon);
             } catch (Exception e) {
                 e.printStackTrace();
