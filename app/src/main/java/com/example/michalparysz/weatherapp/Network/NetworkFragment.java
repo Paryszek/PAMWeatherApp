@@ -14,6 +14,8 @@ import android.support.v4.app.FragmentManager;
 import android.widget.ProgressBar;
 
 import com.example.michalparysz.weatherapp.MainActivity;
+import com.example.michalparysz.weatherapp.Models.Forecast.Forecast;
+import com.example.michalparysz.weatherapp.Models.Result;
 import com.example.michalparysz.weatherapp.Models.Weather.Weather;
 import com.example.michalparysz.weatherapp.R;
 import com.google.gson.Gson;
@@ -34,6 +36,8 @@ import java.util.concurrent.Executors;
 import javax.net.ssl.HttpsURLConnection;
 
 import static com.example.michalparysz.weatherapp.MainActivity.currentCity;
+import static com.example.michalparysz.weatherapp.MainActivity.latitude;
+import static com.example.michalparysz.weatherapp.MainActivity.longitude;
 import static com.example.michalparysz.weatherapp.Network.NetworkFragment.mUrlString;
 
 public class NetworkFragment extends Fragment {
@@ -117,32 +121,16 @@ public class NetworkFragment extends Fragment {
  * Implementation of AsyncTask designed to fetch data from the network.
  */
 
-class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
-    private DownloadCallback<Weather> mCallback;
+class DownloadTask extends AsyncTask<String, Integer, Result> {
+    private DownloadCallback<Result> mCallback;
 
-    public DownloadTask(DownloadCallback<Weather> callback) {
+    DownloadTask(DownloadCallback<Result> callback) {
         setCallback(callback);
     }
 
 
-    void setCallback(DownloadCallback<Weather> callback) {
+    private void setCallback(DownloadCallback<Result> callback) {
         mCallback = callback;
-    }
-
-    /**
-     * Wrapper class that serves as a union of a result value and an exception. When the download
-     * task has completed, either the result value or exception can be a non-null value.
-     * This allows you to pass exceptions to the UI thread that were thrown during doInBackground().
-     */
-    static class Result {
-        public String mResultValue;
-        public Exception mException;
-        public Result(String resultValue) {
-            mResultValue = resultValue;
-        }
-        public Result(Exception exception) {
-            mException = exception;
-        }
     }
 
     /**
@@ -158,7 +146,9 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
                     (networkInfo.getType() != ConnectivityManager.TYPE_WIFI
                             && networkInfo.getType() != ConnectivityManager.TYPE_MOBILE)) {
                 // If no connectivity, cancel task and update Callback with null data.
-                mCallback.updateFromDownload(null);
+
+                // tutaj pobrac z pliku
+                mCallback.noConnectionError();
                 cancel(true);
             }
         }
@@ -169,20 +159,25 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
      */
     @Override
     protected Result doInBackground(String... params) {
-        Weather weather = null;
-        List<String> urls = new ArrayList<>();
-        urls.add(mUrlString);
-        if (!isCancelled() && !urls.isEmpty()) {
-            String urlString = urls.get(0);
+        Result result = null;
+        if (!isCancelled()) {
             try {
-                URL url = new URL("https://api.apixu.com/v1/current.json?key=7214cc918a3244bfa71224638181006&q=" + currentCity);
-                weather = downloadUrl(url);
-                mCallback.updateFromDownload(weather);
+                URL urlWeather = null;
+                URL urlForecast = null;
+                if (!currentCity.isEmpty()) {
+                    urlWeather = new URL("https://api.apixu.com/v1/current.json?key=ab34da598a0c40d2a96223124181306&q=" + currentCity);
+                    urlForecast = new URL("https://api.apixu.com/v1/forecast.json?key=ab34da598a0c40d2a96223124181306&q=" + currentCity + "&days=5");
+                } else {
+                    urlWeather = new URL("https://api.apixu.com/v1/current.json?key=ab34da598a0c40d2a96223124181306&q=" + latitude + "," + longitude);
+                    urlForecast = new URL("https://api.apixu.com/v1/forecast.json?key=ab34da598a0c40d2a96223124181306&q=" + latitude + "," + longitude);
+                }
+                result = new Result(downloadUrlWeather(urlWeather), downloadUrlForecast(urlForecast));
+                mCallback.updateFromDownload(result);
             } catch(Exception e) {
                 e.printStackTrace();
             }
         }
-        return new Result("");
+        return result;
     }
 
     /**
@@ -190,37 +185,28 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
      * If the network request is successful, it returns the response body in String form. Otherwise,
      * it will throw an IOException.
      */
-    private Weather downloadUrl(URL url) throws IOException {
+    private Weather downloadUrlWeather(URL url) throws IOException {
         InputStream stream = null;
         HttpsURLConnection connection = null;
         Weather result = new Weather();
         try {
             connection = (HttpsURLConnection) url.openConnection();
-            // Timeout for reading InputStream arbitrarily set to 3000ms.
             connection.setReadTimeout(3000);
-            // Timeout for connection.connect() arbitrarily set to 3000ms.
             connection.setConnectTimeout(3000);
-            // For this use case, set HTTP method to GET.
             connection.setRequestMethod("GET");
-            // Already true by default but setting just in case; needs to be true since this request
-            // is carrying an input (response) body.
             connection.setDoInput(true);
-            // Open communications link (network traffic occurs here).
             connection.connect();
             publishProgress(DownloadCallback.Progress.CONNECT_SUCCESS);
-            int responseCode = connection.getResponseCode();
-            if (responseCode != HttpsURLConnection.HTTP_OK) {
-                throw new IOException("HTTP error code: " + responseCode);
+            if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
+                mCallback.stopDownloading();
+                throw new IOException("HTTP error code: " + connection.getResponseCode());
             }
-            // Retrieve the response body as an InputStream.
             stream = connection.getInputStream();
             publishProgress(DownloadCallback.Progress.GET_INPUT_STREAM_SUCCESS, 0);
             if (stream != null) {
-                // Converts Stream to String with max length of 500.
-                result = readStream(stream);
+                result = readStreamToWeather(stream);
             }
         } finally {
-            // Close Stream and disconnect HTTPS connection.
             if (stream != null) {
                 stream.close();
             }
@@ -231,7 +217,7 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
         return result;
     }
 
-    Weather readStream(InputStream stream)
+    Weather readStreamToWeather(InputStream stream)
             throws IOException, UnsupportedEncodingException {
         Reader reader = new InputStreamReader(stream, "UTF-8");
         Gson g = new Gson();
@@ -244,17 +230,57 @@ class DownloadTask extends AsyncTask<String, Integer, DownloadTask.Result> {
         return w;
     }
 
+    private Forecast downloadUrlForecast(URL url) throws IOException {
+        InputStream stream = null;
+        HttpsURLConnection connection = null;
+        Forecast result = new Forecast();
+        try {
+            connection = (HttpsURLConnection) url.openConnection();
+            connection.setReadTimeout(3000);
+            connection.setConnectTimeout(3000);
+            connection.setRequestMethod("GET");
+            connection.setDoInput(true);
+            connection.connect();
+            publishProgress(DownloadCallback.Progress.CONNECT_SUCCESS);
+            if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
+                mCallback.stopDownloading();
+                throw new IOException("HTTP error code: " + connection.getResponseCode());
+            }
+            stream = connection.getInputStream();
+            publishProgress(DownloadCallback.Progress.GET_INPUT_STREAM_SUCCESS, 0);
+            if (stream != null) {
+                result = readStreamToForecast(stream);
+            }
+        } finally {
+            if (stream != null) {
+                stream.close();
+            }
+            if (connection != null) {
+                connection.disconnect();
+            }
+        }
+        return result;
+    }
+
+    Forecast readStreamToForecast(InputStream stream)
+            throws IOException, UnsupportedEncodingException {
+        Reader reader = new InputStreamReader(stream, "UTF-8");
+        Gson g = new Gson();
+        Forecast w = new Forecast();
+        try {
+            w = g.fromJson(reader, Forecast.class);
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+        }
+        return w;
+    }
+
     /**
      * Updates the DownloadCallback with the result.
      */
     @Override
     protected void onPostExecute(Result result) {
         if (result != null && mCallback != null) {
-            if (result.mException != null) {
-                mCallback.updateFromDownload(new Weather());
-            } else if (result.mResultValue != null) {
-                mCallback.updateFromDownload(new Weather());
-            }
             mCallback.finishDownloading();
         }
     }

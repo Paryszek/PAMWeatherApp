@@ -1,77 +1,107 @@
 package com.example.michalparysz.weatherapp;
 
 import android.annotation.SuppressLint;
-import android.support.v4.app.FragmentManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.design.widget.TextInputLayout;
+import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.text.Editable;
-import android.widget.ProgressBar;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.astrocalculator.AstroCalculator;
 import com.astrocalculator.AstroDateTime;
-import com.example.michalparysz.weatherapp.Fragments.*;
+import com.example.michalparysz.weatherapp.Fragments.ForecastWeatherFragment;
+import com.example.michalparysz.weatherapp.Fragments.MoonFragment;
+import com.example.michalparysz.weatherapp.Fragments.SunFragment;
+import com.example.michalparysz.weatherapp.Fragments.WeatherFragment;
+import com.example.michalparysz.weatherapp.Models.Forecast.Forecast;
+import com.example.michalparysz.weatherapp.Models.Result;
 import com.example.michalparysz.weatherapp.Models.Weather.Weather;
 import com.example.michalparysz.weatherapp.Network.DownloadCallback;
 import com.example.michalparysz.weatherapp.Network.NetworkFragment;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements DownloadCallback {
-    private static AstroCalculator astroCalculator;
+
+    public static int latitude = 0;
+    public static int longitude = 0;
+    public static String currentCity = "Warsaw";
+
+    private int refreshPeriod = 60000;
+    private  AstroCalculator astroCalculator;
     private FragmentAdapter _fragmentAdapter;
     private ViewPager viewPager;
-    // Keep a reference to the NetworkFragment, which owns the AsyncTask object
-    // that is used to execute network ops.
     private NetworkFragment mNetworkFragment;
-
-    // Boolean telling us whether a download is in progress, so we don't trigger overlapping
-    // downloads with consecutive button clicks.
     private boolean mDownloading = false;
+    private static Boolean isDownloading = true;
 
-    private int _latitude;
-    private int _longitude;
-    private int _refreshPeriod;
-    public static String currentCity;
-
-    @BindView(R.id.latitudeInput)
-    TextInputLayout latiduteInput;
-    @BindView(R.id.longitudeInput)
-    TextInputLayout longitudeInput;
-    @BindView(R.id.refreshInput)
-    TextInputLayout refreshInput;
     @BindView(R.id.clock)
     TextView clock;
-    @BindView(R.id.cityInput)
-    TextInputLayout cityInput;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setSupportActionBar((Toolbar)findViewById(R.id.settings_bar));
         ButterKnife.bind(this);
         initAstro();
         viewPager = findViewById(R.id.container);
+        viewPager.setOffscreenPageLimit(4);
         setupViewPager(viewPager);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK && requestCode == 1) {
+            try {
+                if (data.hasExtra("currentCity")) {
+                    currentCity = data.getStringExtra("currentCity");
+                }
+                if (data.hasExtra("latitude")) {
+                    latitude = Integer.parseInt(data.getStringExtra("latitude"));
+                }
+                if (data.hasExtra("longitude")) {
+                    longitude = Integer.parseInt(data.getStringExtra("longitude"));
+                }
+                if (data.hasExtra("refreshPeriod")) {
+                    refreshPeriod = Integer.parseInt(data.getStringExtra("refreshPeriod"));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem menuItem) {
+        Intent settings = new Intent(this, SettingsActivity.class);
+        settings.putExtra("currentCity", currentCity);
+        settings.putExtra("latitude", Integer.valueOf(latitude).toString());
+        settings.putExtra("longitude", Integer.valueOf(longitude).toString());
+        startActivityForResult(settings, 1);
+        return super.onOptionsItemSelected(menuItem);
+    }
     @Override
     public void onResume() {
         super.onResume();
@@ -82,10 +112,13 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 runOnUiThread(new Runnable() {
                     public void run() {
                         reloadView();
+                        if(isDownloading) {
+                            startDownload();
+                        }
                     }
                 });
             }
-        }, 0, _refreshPeriod);
+        }, 5000, refreshPeriod);
         Timer updateTime = new Timer();
         updateTime.schedule(new TimerTask() {
             @Override
@@ -93,7 +126,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 runOnUiThread(new Runnable() {
                     public void run() {
                         updateClock();
-                        startDownload();
                     }
                 });
             }
@@ -101,17 +133,45 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     }
 
     @Override
-    public void updateFromDownload(final Weather weather) {
+    public void noConnectionError() {
+        Toast.makeText(getBaseContext(), "Error, no internet connection", Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void updateFromDownload(Result result) {
+        Weather _weather = result.getWeather();
+        Forecast _forecast = result.getForecast();
+        if (_weather.getLocation() != null) {
+            try {
+                latitude = (int) Double.parseDouble(_weather.getLocation().getLat());
+                longitude = (int) Double.parseDouble(_weather.getLocation().getLon());
+                currentCity = _weather.getLocation().getName();
+            } catch (NumberFormatException e) {
+                e.printStackTrace();
+            }
+        }
+        final Weather Weather = _weather;
+        final Forecast Forecast = _forecast;
         // Update your UI here based on result of download.
         runOnUiThread(new Runnable() {
             public void run() {
-                if (!weather.getLocation().getName().equals("")) {
-                    WeatherFragment weatherFragment = (WeatherFragment) _fragmentAdapter.getItem(2);
-                    weatherFragment.reloadViewFragment(weather);
+                if (Weather.getLocation() != null) {
+                    WeatherFragment weatherFragment = (WeatherFragment) _fragmentAdapter.getItem(0);
+                    weatherFragment.reloadViewFragment(Weather);
+                }
+                if (Forecast != null && Forecast.getForecastday() != null) {
+                    //
                 }
             }
         });
     }
+
+    @Override
+    public void stopDownloading() {
+        isDownloading = false;
+        Toast.makeText(getBaseContext(), "Cannot fetch weather data, internet connection problem", Toast.LENGTH_LONG).show();
+    }
+
 
     @Override
     public NetworkInfo getActiveNetworkInfo() {
@@ -126,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         switch(progressCode) {
             // You can add UI behavior for progress updates here.
             case Progress.ERROR:
-            //
+                android.widget.Toast.makeText(getBaseContext(), "There was problem in downloading the weather, please refresh in settings", Toast.LENGTH_LONG).show();
                 break;
             case Progress.CONNECT_SUCCESS:
             //
@@ -160,31 +220,20 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     }
 
     public AstroCalculator getAstro() {
+        if (astroCalculator == null) {
+            initAstro();
+        }
         return astroCalculator;
     }
     public void setViewPager(int fragmentNumber) {
         viewPager.setCurrentItem(fragmentNumber);
     }
 
-    @OnClick(R.id.zatwierdz)
-    public void OnClickZatwierdz() {
-        try {
-            int latV = Integer.parseInt(Objects.requireNonNull(latiduteInput.getEditText()).getText().toString());
-            int longV = Integer.parseInt(Objects.requireNonNull(longitudeInput.getEditText()).getText().toString());
-            int refreshV = Integer.parseInt(Objects.requireNonNull(refreshInput.getEditText()).getText().toString());
-            String cityName = Objects.requireNonNull(cityInput.getEditText()).getText().toString();
-            if (validation(latV, "latidute") && validation(longV, "longitude") && validation(refreshV, "refreshPeriod") && !cityName.isEmpty()) {
-                _latitude = latV;
-                _longitude = longV;
-                _refreshPeriod = refreshV;
-                currentCity = cityName;
-                reloadView();
-            } else {
-                Toast.makeText(this, "Wrong inputs, please try again", Toast.LENGTH_LONG).show();
-            }
-        } catch (NumberFormatException e) {}
-    }
 
+    @SuppressLint("SetTextI18n")
+    private void initAstro() {
+        astroCalculator = new AstroCalculator(getDate(), new AstroCalculator.Location(latitude, longitude));
+    }
     @SuppressLint("SetTextI18n")
     private void updateClock() {
         Date astroDateTime = new Date();
@@ -194,24 +243,11 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         clock.setText(_hours + ":" + _minutes + ":" + _seconds);
     }
 
-    private boolean validation(int value, String type) {
-        switch (type) {
-            case "latidute":
-                if (-90 <= value && value <= 90) return true;
-                break;
-            case "longitude":
-                if (-180 <= value && value <= 180) return true;
-                break;
-            case "refreshPeriod":
-                if (value >= 0) return true;
-                break;
-        }
-        return false;
-    }
+
     private void reloadView() {
-        astroCalculator = new AstroCalculator(getDate(), new AstroCalculator.Location(_latitude, _longitude));
-        MoonFragment moonFragment = (MoonFragment) _fragmentAdapter.getItem(0);
-        SunFragment sunFragment = (SunFragment) _fragmentAdapter.getItem(1);
+        astroCalculator = new AstroCalculator(getDate(), new AstroCalculator.Location(latitude, longitude));
+        MoonFragment moonFragment = (MoonFragment) _fragmentAdapter.getItem(2);
+        SunFragment sunFragment = (SunFragment) _fragmentAdapter.getItem(3);
         moonFragment.reloadMoonFragment();
         sunFragment.reloadSunFragment();
     }
@@ -219,22 +255,12 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         FragmentManager fragmentManager = getSupportFragmentManager();
         mNetworkFragment = NetworkFragment.getInstance(fragmentManager, "http://api.apixu.com/v1/current.json");
         _fragmentAdapter = new FragmentAdapter(fragmentManager);
+        _fragmentAdapter.addFragment(new WeatherFragment(), "Weather");
+        _fragmentAdapter.addFragment(new ForecastWeatherFragment(), "ForecastWeather");
         _fragmentAdapter.addFragment(new MoonFragment(), "Moon");
         _fragmentAdapter.addFragment(new SunFragment(), "Sun");
         _fragmentAdapter.addFragment(new WeatherFragment(), "Weather");
-        _fragmentAdapter.addFragment(new ForecastWeatherFragment(), "ForecastWeather");
         viewPager.setAdapter(_fragmentAdapter);
-    }
-
-    @SuppressLint("SetTextI18n")
-    private void initAstro() {
-        _refreshPeriod = 10000;
-        Objects.requireNonNull(latiduteInput.getEditText()).setText("0");
-        Objects.requireNonNull(longitudeInput.getEditText()).setText("0");
-        Objects.requireNonNull(refreshInput.getEditText()).setText(((Integer) _refreshPeriod).toString());
-        int latitudeValue = Integer.parseInt(Objects.requireNonNull(latiduteInput.getEditText()).getText().toString());
-        int longitudeValue = Integer.parseInt(Objects.requireNonNull(latiduteInput.getEditText()).getText().toString());
-        astroCalculator = new AstroCalculator(getDate(), new AstroCalculator.Location(latitudeValue, longitudeValue));
     }
 
     private AstroDateTime getDate() {

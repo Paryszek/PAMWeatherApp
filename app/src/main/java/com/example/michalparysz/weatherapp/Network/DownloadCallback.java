@@ -2,9 +2,12 @@ package com.example.michalparysz.weatherapp.Network;
 
 import android.net.NetworkInfo;
 
+import com.example.michalparysz.weatherapp.Models.Result;
 import com.example.michalparysz.weatherapp.Models.Weather.Weather;
 
 public interface DownloadCallback<T> {
+    void noConnectionError();
+
     interface Progress {
         int ERROR = -1;
         int CONNECT_SUCCESS = 0;
@@ -17,10 +20,10 @@ public interface DownloadCallback<T> {
      * Indicates that the callback handler needs to update its appearance or information based on
      * the result of the task. Expected to be called from the main thread.
      */
-//    void updateFromDownload(T result);
+    void updateFromDownload(Result result);
 
-    void updateFromDownload(Weather weather);
-
+//    void updateFromDownload(Weather weather);
+    void stopDownloading();
     /**
      * Get the device's active network status in the form of a NetworkInfo object.
      */

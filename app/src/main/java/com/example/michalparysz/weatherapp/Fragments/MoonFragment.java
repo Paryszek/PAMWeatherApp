@@ -42,20 +42,18 @@ public class MoonFragment extends Fragment {
     @BindView(R.id.monthAge)
     TextView monthAge;
 
-    public MoonFragment() {}
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.moon_fragment, container, false);
         ButterKnife.bind(this, view);
+        astroCalculator = ((MainActivity) getActivity()).getAstro();
         return view;
     }
 
     @SuppressLint("SetTextI18n")
     public void reloadMoonFragment() {
         try {
-            astroCalculator = ((MainActivity) getActivity()).getAstro();
             moonRise.setText(formatDate(astroCalculator.getMoonInfo().getMoonrise()));
             moonSet.setText(formatDate(astroCalculator.getMoonInfo().getMoonset()));
             nextNewMoon.setText(formatDate(astroCalculator.getMoonInfo().getNextNewMoon()));

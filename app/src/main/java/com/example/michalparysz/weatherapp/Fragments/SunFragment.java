@@ -38,18 +38,17 @@ public class SunFragment extends Fragment {
     TextView twilightSunrise;
     @BindView(R.id.twilightSunset)
     TextView twilightSunset;
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.sun_fragment, container, false);
         ButterKnife.bind(this, view);
+        astroCalculator = ((MainActivity) getActivity()).getAstro();
         return view;
     }
 
     @SuppressLint("SetTextI18n")
     public void reloadSunFragment() {
-        astroCalculator = ((MainActivity) getActivity()).getAstro();
         sunrise.setText(formatDate(astroCalculator.getSunInfo().getSunrise()));
         sunriseAzimuth.setText(((Double) astroCalculator.getSunInfo().getAzimuthRise()).toString());
         sunset.setText(formatDate(astroCalculator.getSunInfo().getSunset()));
