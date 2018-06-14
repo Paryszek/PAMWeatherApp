@@ -104,13 +104,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
-            android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:elevation="0dp"
             android:text="@string/zatwierdz"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/cityInput"
             app:layout_constraintTop_toBottomOf="@+id/longitudeInput"
             app:layout_constraintVertical_bias="0.0" />
@@ -121,7 +119,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="reload weather"
+            android:text="@string/reload_weather"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/zatwierdz" />
 
@@ -131,9 +129,19 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
-            android:text="imperial units"
+            android:text="@string/imperial_units"
             app:layout_constraintStart_toEndOf="@+id/reloadWeatherCheckBox"
             app:layout_constraintTop_toBottomOf="@+id/zatwierdz" />
+
+        <Button
+            android:id="@+id/resetList"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="Reset List"
+            app:layout_constraintStart_toEndOf="@+id/zatwierdz"
+            app:layout_constraintTop_toBottomOf="@+id/refreshInput" />
 
 
     </android.support.constraint.ConstraintLayout>

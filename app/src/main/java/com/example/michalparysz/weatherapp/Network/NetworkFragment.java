@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,8 +140,6 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
                     (networkInfo.getType() != ConnectivityManager.TYPE_WIFI
                             && networkInfo.getType() != ConnectivityManager.TYPE_MOBILE)) {
                 // If no connectivity, cancel task and update Callback with null data.
-
-                // tutaj pobrac z pliku
                 mCallback.updateFromDownload(getFromFile());
                 mCallback.stopDownloading("No internet connection");
                 cancel(true);
@@ -159,11 +158,11 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
                 URL urlWeather = null;
                 URL urlForecast = null;
                 if (!currentCity.isEmpty()) {
-                    urlWeather = new URL("https://api.apixu.com/v1/current.json?key=" + apiKey + "&q=" + currentCity);
-                    urlForecast = new URL("https://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + currentCity + "&days=5");
+                    urlWeather = new URL("http://api.apixu.com/v1/current.json?key=" + apiKey + "&q=" + currentCity);
+                    urlForecast = new URL("http://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + currentCity + "&days=5");
                 } else {
-                    urlWeather = new URL("https://api.apixu.com/v1/current.json?key=" + apiKey + "&q=" + latitude + "," + longitude);
-                    urlForecast = new URL("https://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + latitude + "," + longitude);
+                    urlWeather = new URL("http://api.apixu.com/v1/current.json?key=" + apiKey + "&q=" + latitude + "," + longitude);
+                    urlForecast = new URL("http://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + latitude + "," + longitude);
                 }
                 result = new Result(downloadUrlWeather(urlWeather), downloadUrlForecast(urlForecast));
                 mCallback.updateFromDownload(result);
@@ -181,23 +180,21 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
      */
     private Weather downloadUrlWeather(URL url) throws IOException {
         InputStream stream = null;
-        HttpsURLConnection connection = null;
+        HttpURLConnection connection = null;
         Weather result = new Weather();
         try {
-            connection = (HttpsURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             connection.setReadTimeout(6000);
             connection.setConnectTimeout(6000);
             connection.setRequestMethod("GET");
             connection.setDoInput(true);
             connection.connect();
-            publishProgress(DownloadCallback.Progress.CONNECT_SUCCESS);
-            if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
 //                mCallback.updateFromDownload(getFromFile());
-                mCallback.stopDownloading("Weather Api not responding");
+                mCallback.stopDownloading("Weather api not responding");
                 throw new IOException("HTTP error code: " + connection.getResponseCode());
             }
             stream = connection.getInputStream();
-            publishProgress(DownloadCallback.Progress.GET_INPUT_STREAM_SUCCESS, 0);
             if (stream != null) {
                 result = readStreamToWeather(stream);
             }
@@ -227,23 +224,21 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
 
     private Forecast downloadUrlForecast(URL url) throws IOException {
         InputStream stream = null;
-        HttpsURLConnection connection = null;
+        HttpURLConnection connection = null;
         Forecast result = new Forecast();
         try {
-            connection = (HttpsURLConnection) url.openConnection();
+            connection = (HttpURLConnection) url.openConnection();
             connection.setReadTimeout(6000);
             connection.setConnectTimeout(6000);
             connection.setRequestMethod("GET");
             connection.setDoInput(true);
             connection.connect();
-            publishProgress(DownloadCallback.Progress.CONNECT_SUCCESS);
-            if (connection.getResponseCode() != HttpsURLConnection.HTTP_OK) {
+            if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
 //                mCallback.updateFromDownload(getFromFile());
-                mCallback.stopDownloading("Weather Api not responding");
+                mCallback.stopDownloading("Weather api not responding");
                 throw new IOException("HTTP error code: " + connection.getResponseCode());
             }
             stream = connection.getInputStream();
-            publishProgress(DownloadCallback.Progress.GET_INPUT_STREAM_SUCCESS, 0);
             if (stream != null) {
                 result = readStreamToForecast(stream);
             }
@@ -289,7 +284,7 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
     }
 
     public Result getFromFile() {
-        return new Result();
+        return new Result(new Weather(), new Forecast());
     }
 }
 

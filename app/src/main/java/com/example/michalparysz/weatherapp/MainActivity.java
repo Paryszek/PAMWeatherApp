@@ -28,6 +28,10 @@ import com.example.michalparysz.weatherapp.Models.Weather.Weather;
 import com.example.michalparysz.weatherapp.Network.DownloadCallback;
 import com.example.michalparysz.weatherapp.Network.NetworkFragment;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Timer;
@@ -41,8 +45,8 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     public static int latitude = 0;
     public static int longitude = 0;
     public static Boolean imUnits = false;
-    public static String currentCity = "Warsaw";
-    public static String apiKey = "51a2f4e99a2d4df5a5612051181406";
+    public static String currentCity;
+    public static String apiKey = "dc27258ebcc84e7dad6222556181406";
 
     private int refreshPeriod = 60000;
     private  AstroCalculator astroCalculator;
@@ -50,7 +54,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     private ViewPager viewPager;
     private NetworkFragment mNetworkFragment;
     private boolean mDownloading = false;
-    private static Boolean isDownloading = true;
 
     @BindView(R.id.clock)
     TextView clock;
@@ -62,9 +65,29 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         setSupportActionBar((Toolbar)findViewById(R.id.settings_bar));
         ButterKnife.bind(this);
         initAstro();
+        initCity();
         viewPager = findViewById(R.id.container);
         viewPager.setOffscreenPageLimit(4);
         setupViewPager(viewPager);
+    }
+
+    private void initCity() {
+        try {
+            String filename = "cities.data";
+            File file = new File(getBaseContext().getFilesDir(), filename);
+            if (file.exists() || file.length() != 0) {
+                FileInputStream fin = new FileInputStream(file);
+                ObjectInputStream ois = new ObjectInputStream(fin);
+                currentCity = ((ArrayList<String>) ois.readObject()).get(0);
+                fin.close();
+                ois.close();
+            } else {
+                currentCity = "Warsaw";
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     @Override
@@ -92,8 +115,9 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 }
                 if (data.hasExtra("reloadWeather")) {
                     if(data.getBooleanExtra("reloadWeather", false)) {
-                        isDownloading = true;
+                        mDownloading = false;
                         startDownload();
+                        mDownloading = true;
                     }
                 }
                 if (data.hasExtra("imUnits")) {
@@ -130,7 +154,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 runOnUiThread(new Runnable() {
                     public void run() {
                         reloadView();
-                        if(isDownloading) {
+                        if(!mDownloading) {
                             startDownload();
                         }
                     }
@@ -148,11 +172,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 });
             }
         },0, 1000);
-    }
-
-    @Override
-    public void noConnectionError() {
-        Toast.makeText(getBaseContext(), "Error, no internet connection", Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -185,9 +204,13 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     }
 
     @Override
-    public void stopDownloading(String error) {
-        isDownloading = false;
-        android.widget.Toast.makeText(getBaseContext(), error, Toast.LENGTH_LONG).show();
+    public void stopDownloading(final String error) {
+        mDownloading = false;
+        runOnUiThread(new Runnable() {
+            public void run() {
+                android.widget.Toast.makeText(getBaseContext(), error, Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
 
@@ -197,29 +220,6 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         return networkInfo;
-    }
-
-    @Override
-    public void onProgressUpdate(int progressCode, int percentComplete) {
-        switch(progressCode) {
-            // You can add UI behavior for progress updates here.
-            case Progress.ERROR:
-                android.widget.Toast.makeText(getBaseContext(), "There was problem in downloading the weather, please refresh in settings", Toast.LENGTH_LONG).show();
-                Toast.makeText(getBaseContext(), "There was problem in downloading the weather, please refresh in settings", Toast.LENGTH_LONG).show();
-                break;
-            case Progress.CONNECT_SUCCESS:
-            //
-                break;
-            case Progress.GET_INPUT_STREAM_SUCCESS:
-            //
-                break;
-            case Progress.PROCESS_INPUT_STREAM_IN_PROGRESS:
-            //
-                break;
-            case Progress.PROCESS_INPUT_STREAM_SUCCESS:
-            //
-                break;
-        }
     }
 
     @Override
@@ -235,7 +235,9 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
             mNetworkFragment.startDownload();
             mDownloading = true;
         } else {
-            android.widget.Toast.makeText(getBaseContext(), "Downloading...", Toast.LENGTH_LONG).show();
+            if(!mDownloading) {
+                android.widget.Toast.makeText(getBaseContext(), "Already downloading...", Toast.LENGTH_LONG).show();
+            }
         }
     }
 

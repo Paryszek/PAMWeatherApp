@@ -2,6 +2,7 @@ package com.example.michalparysz.weatherapp;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Environment;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -11,10 +12,20 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.io.EOFException;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOError;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -43,8 +54,9 @@ public class SettingsActivity extends AppCompatActivity {
     private String refreshPeriod = "60000";
     private String currentCity = "Warsaw";
     private String reloadWeather = "false";
-    ArrayList<String> citiesArray;
+    ArrayList<String> citiesArray = new ArrayList<>();
     ArrayAdapter<String> citiesAdapter;
+    private String filename = "cities.data";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +70,11 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void initListView() {
-        citiesArray = getCitiesFromFile();
+        try {
+            citiesArray = getCitiesFromFile();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         citiesAdapter = new ArrayAdapter<>(getBaseContext(), android.R.layout.simple_list_item_activated_1, citiesArray);
         citiesList.setAdapter(citiesAdapter);
 
@@ -130,7 +146,16 @@ public class SettingsActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
-
+    @OnClick(R.id.resetList)
+    public void OnClickResetList() {
+        try {
+            citiesArray.clear();
+            citiesAdapter.notifyDataSetChanged();
+            saveCitiesToFile();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     @OnClick(R.id.zatwierdz)
     public void OnClickZatwierdz() {
         try {
@@ -182,14 +207,30 @@ public class SettingsActivity extends AppCompatActivity {
         return false;
     }
 
-    public ArrayList<String> getCitiesFromFile() {
-        ArrayList<String> citiesFromFile = new ArrayList<>();
-        citiesFromFile.add("Paris");
-        citiesFromFile.add("London");
-        citiesFromFile.add("Berlin");
+    private ArrayList<String> getCitiesFromFile() throws FileNotFoundException, IOException, ClassNotFoundException, EOFException, NullPointerException {
+        ArrayList<String> citiesFromFile;
+        File file = new File(getBaseContext().getFilesDir(), filename);
+        if (!file.exists() || file.length() == 0) {
+            if(citiesArray != null) {
+                citiesArray.clear();
+                citiesArray = new ArrayList<>();
+            }
+            file.createNewFile();
+            saveCitiesToFile();
+        }
+        FileInputStream fin = new FileInputStream(file);
+        ObjectInputStream ois = new ObjectInputStream(fin);
+        citiesFromFile = (ArrayList<String>)ois.readObject();
+        fin.close();
         return citiesFromFile;
     }
 
-    private void saveCitiesToFile() {
+    private void saveCitiesToFile() throws IOException{
+        File file = new File(getBaseContext().getFilesDir(), filename);
+        FileOutputStream fout = new FileOutputStream(file);
+        ObjectOutputStream oos = new ObjectOutputStream(fout);
+        oos.writeObject(citiesArray);
+        fout.close();
+        oos.close();
     }
 }
