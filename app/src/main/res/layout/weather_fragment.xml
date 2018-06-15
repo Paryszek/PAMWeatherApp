@@ -16,7 +16,7 @@
             android:layout_width="wrap_content"
             android:layout_height="49dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="64dp"
             android:text=""
             android:textSize="32sp"
             app:layout_constraintStart_toEndOf="@+id/weatherIcon"
@@ -60,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="64dp"
             android:text=""
             android:textSize="16sp"
             app:layout_constraintStart_toEndOf="@+id/cityname"
@@ -82,7 +82,7 @@
             android:layout_width="64dp"
             android:layout_height="64dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="64dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 

@@ -169,10 +169,10 @@ class DownloadTask extends AsyncTask<String, Integer, Result> {
                 URL urlForecast = null;
                 if (currentCity != null && !currentCity.isEmpty()) {
                     urlWeather = new URL("http://api.apixu.com/v1/current.json?key=" + apiKey + "&q=" + currentCity);
-                    urlForecast = new URL("http://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + currentCity + "&days=1");
+                    urlForecast = new URL("http://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + currentCity + "&days=10");
                 } else {
                     urlWeather = new URL("http://api.apixu.com/v1/current.json?key=" + apiKey + "&q=" + latitude + "," + longitude);
-                    urlForecast = new URL("http://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + latitude + "," + longitude + "&days=1");
+                    urlForecast = new URL("http://api.apixu.com/v1/forecast.json?key=" + apiKey + "&q=" + latitude + "," + longitude + "&days=10");
                 }
                 result = new Result(downloadUrlWeather(urlWeather), downloadUrlWeatherForecast(urlForecast));
                 if (result.getWeather() != null & result.getWeatherForecast() != null)

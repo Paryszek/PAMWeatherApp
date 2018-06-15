@@ -218,11 +218,12 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 if (Weather.getLocation() != null) {
                     WeatherFragment weatherFragment = (WeatherFragment) _fragmentAdapter.getItem(0);
                     weatherFragment.reloadViewFragment(Weather);
-                    reloadView();
                 }
                 if (WeatherForecast != null) {
-                    //
+                    ForecastWeatherFragment forecastWeatherFragment = (ForecastWeatherFragment) _fragmentAdapter.getItem(1);
+                    forecastWeatherFragment.reloadViewFragment(WeatherForecast);
                 }
+                reloadView();
             }
         });
     }
