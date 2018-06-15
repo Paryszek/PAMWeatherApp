@@ -1,6 +1,8 @@
 package com.example.michalparysz.weatherapp.Models.Forecast;
 
-public class Day
+import java.io.Serializable;
+
+public class Day implements Serializable
 {
     private Condition condition;
 
@@ -31,6 +33,8 @@ public class Day
     private String avgvis_miles;
 
     private String maxwind_kph;
+
+    public Day() {}
 
     public Condition getCondition ()
     {

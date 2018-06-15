@@ -82,7 +82,7 @@ public class SettingsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 Objects.requireNonNull(cityInput.getEditText()).setText(citiesArray.get(i));
-                currentCity = citiesArray.get(i);
+                cityInput.getEditText().setText(citiesArray.get(i));
             }
         });
 
@@ -163,14 +163,17 @@ public class SettingsActivity extends AppCompatActivity {
             int longV = Integer.parseInt(Objects.requireNonNull(longitudeInput.getEditText()).getText().toString());
             int refreshV = Integer.parseInt(Objects.requireNonNull(refreshInput.getEditText()).getText().toString());
             String cityName = Objects.requireNonNull(cityInput.getEditText()).getText().toString();
-            if (validation(latV, "latidute") && validation(longV, "longitude") && validation(refreshV, "refreshPeriod")) {
+            if (validation(latV, "latidute") && validation(longV, "longitude") && validation(refreshV, "refreshPeriod") && !cityName.endsWith(" ")) {
                 latitude = String.valueOf(latV);
                 longitude = String.valueOf(longV);
                 refreshPeriod = String.valueOf(refreshV);
                 currentCity = cityName;
             } else {
-                android.widget.Toast.makeText(getBaseContext(), "Wrong inputs, please try again", Toast.LENGTH_LONG).show();
-                Toast.makeText(getBaseContext(), "Wrong inputs, please try again", Toast.LENGTH_LONG).show();
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        android.widget.Toast.makeText(getBaseContext(), "Wrong inputs, please try again", Toast.LENGTH_LONG).show();
+                    }
+                });
             }
         } catch (NumberFormatException e) {
             e.printStackTrace();
@@ -216,12 +219,17 @@ public class SettingsActivity extends AppCompatActivity {
                 citiesArray = new ArrayList<>();
             }
             file.createNewFile();
+            citiesArray.add("Warsaw");
+            saveCitiesToFile();
+        } else {
+            citiesArray.add("Warsaw");
             saveCitiesToFile();
         }
         FileInputStream fin = new FileInputStream(file);
         ObjectInputStream ois = new ObjectInputStream(fin);
         citiesFromFile = (ArrayList<String>)ois.readObject();
         fin.close();
+        ois.close();
         return citiesFromFile;
     }
 

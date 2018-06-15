@@ -11,8 +11,9 @@ public interface DownloadCallback<T> {
      * the result of the task. Expected to be called from the main thread.
      */
     void updateFromDownload(Result result);
-
-//    void updateFromDownload(Weather weather);
+    /**
+     * when downloading stops, we send error to inform the user
+     */
     void stopDownloading(String error);
     /**
      * Get the device's active network status in the form of a NetworkInfo object.

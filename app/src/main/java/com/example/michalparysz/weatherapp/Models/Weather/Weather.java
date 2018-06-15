@@ -1,9 +1,13 @@
 package com.example.michalparysz.weatherapp.Models.Weather;
 
-public class Weather {
+import java.io.Serializable;
+
+public class Weather implements Serializable {
     private Location location;
 
     private Current current;
+
+    public Weather() {}
 
     public Location getLocation ()
     {

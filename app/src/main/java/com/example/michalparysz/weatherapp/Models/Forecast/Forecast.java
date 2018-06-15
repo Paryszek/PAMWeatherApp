@@ -1,8 +1,12 @@
 package com.example.michalparysz.weatherapp.Models.Forecast;
 
-public class Forecast
+import java.io.Serializable;
+
+public class Forecast implements Serializable
 {
     private Forecastday[] forecastday;
+
+    public Forecast() {}
 
     public Forecastday[] getForecastday ()
     {

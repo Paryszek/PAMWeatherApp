@@ -1,5 +1,8 @@
 package com.example.michalparysz.weatherapp.Models.Forecast;
-public class Astro
+
+import java.io.Serializable;
+
+public class Astro implements Serializable
 {
     private String moonset;
 
@@ -8,7 +11,7 @@ public class Astro
     private String sunrise;
 
     private String moonrise;
-
+    public Astro() {}
     public String getMoonset ()
     {
         return moonset;

@@ -1,25 +1,27 @@
 package com.example.michalparysz.weatherapp.Models;
 
-import com.example.michalparysz.weatherapp.Models.Forecast.Forecast;
+import com.example.michalparysz.weatherapp.Models.Forecast.WeatherForecast;
 import com.example.michalparysz.weatherapp.Models.Weather.Weather;
 
-public class Result {
+import java.io.Serializable;
+
+public class Result implements Serializable{
     private Weather weather;
-    private Forecast forecast;
+    private WeatherForecast weatherForecast;
 
     public Result() {
 
     }
-    public Result (Weather weather, Forecast forecast) {
+    public Result (Weather weather, WeatherForecast weatherForecast) {
         this.weather = weather;
-        this.forecast = forecast;
+        this.weatherForecast = weatherForecast;
     }
 
     public Weather getWeather() {
         return weather;
     }
 
-    public Forecast getForecast() {
-        return forecast;
+    public WeatherForecast getWeatherForecast() {
+        return weatherForecast;
     }
 }

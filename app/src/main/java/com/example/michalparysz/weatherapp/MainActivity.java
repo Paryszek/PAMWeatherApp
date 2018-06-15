@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
+import android.net.Network;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -23,6 +24,7 @@ import com.example.michalparysz.weatherapp.Fragments.MoonFragment;
 import com.example.michalparysz.weatherapp.Fragments.SunFragment;
 import com.example.michalparysz.weatherapp.Fragments.WeatherFragment;
 import com.example.michalparysz.weatherapp.Models.Forecast.Forecast;
+import com.example.michalparysz.weatherapp.Models.Forecast.WeatherForecast;
 import com.example.michalparysz.weatherapp.Models.Result;
 import com.example.michalparysz.weatherapp.Models.Weather.Weather;
 import com.example.michalparysz.weatherapp.Network.DownloadCallback;
@@ -31,9 +33,11 @@ import com.example.michalparysz.weatherapp.Network.NetworkFragment;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -46,7 +50,9 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     public static int longitude = 0;
     public static Boolean imUnits = false;
     public static String currentCity;
-    public static String apiKey = "dc27258ebcc84e7dad6222556181406";
+    public static String apiKey = "7725cec239f14e07a9f10908181506";
+    public static File path;
+    public static boolean connection = true;
 
     private int refreshPeriod = 60000;
     private  AstroCalculator astroCalculator;
@@ -66,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
         ButterKnife.bind(this);
         initAstro();
         initCity();
+        path = getBaseContext().getFilesDir();
         viewPager = findViewById(R.id.container);
         viewPager.setOffscreenPageLimit(4);
         setupViewPager(viewPager);
@@ -82,6 +89,9 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 fin.close();
                 ois.close();
             } else {
+                currentCity = "Warsaw";
+            }
+            if (currentCity == null){
                 currentCity = "Warsaw";
             }
         } catch (Exception e) {
@@ -115,9 +125,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 }
                 if (data.hasExtra("reloadWeather")) {
                     if(data.getBooleanExtra("reloadWeather", false)) {
-                        mDownloading = false;
                         startDownload();
-                        mDownloading = true;
                     }
                 }
                 if (data.hasExtra("imUnits")) {
@@ -168,35 +176,51 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 runOnUiThread(new Runnable() {
                     public void run() {
                         updateClock();
+                        if (!connection)
+                            checkIfConnectionIsBack();
                     }
                 });
             }
         },0, 1000);
     }
 
+    private void checkIfConnectionIsBack() {
+        NetworkInfo networkInfo = getActiveNetworkInfo();
+        if (networkInfo != null && networkInfo.isConnected() &&
+                (networkInfo.getType() == ConnectivityManager.TYPE_WIFI
+                        || networkInfo.getType() == ConnectivityManager.TYPE_MOBILE) && !connection) {
+            android.widget.Toast.makeText(getBaseContext(), "Internet Connection is back", Toast.LENGTH_LONG).show();
+            startDownload();
+            android.widget.Toast.makeText(getBaseContext(), "Our data is up to date after disconnection", Toast.LENGTH_LONG).show();
+            connection = true;
+        }
+    }
+
     @Override
     public void updateFromDownload(Result result) {
         Weather _weather = result.getWeather();
-        Forecast _forecast = result.getForecast();
+        WeatherForecast _forecast = result.getWeatherForecast();
         if (_weather.getLocation() != null) {
             try {
                 latitude = (int) Double.parseDouble(_weather.getLocation().getLat());
                 longitude = (int) Double.parseDouble(_weather.getLocation().getLon());
+                initAstro();
                 currentCity = _weather.getLocation().getName();
             } catch (NumberFormatException e) {
                 e.printStackTrace();
             }
         }
         final Weather Weather = _weather;
-        final Forecast Forecast = _forecast;
+        final WeatherForecast WeatherForecast = _forecast;
         // Update your UI here based on result of download.
         runOnUiThread(new Runnable() {
             public void run() {
                 if (Weather.getLocation() != null) {
                     WeatherFragment weatherFragment = (WeatherFragment) _fragmentAdapter.getItem(0);
                     weatherFragment.reloadViewFragment(Weather);
+                    reloadView();
                 }
-                if (Forecast != null && Forecast.getForecastday() != null) {
+                if (WeatherForecast != null) {
                     //
                 }
             }
@@ -205,9 +229,10 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
 
     @Override
     public void stopDownloading(final String error) {
-        mDownloading = false;
         runOnUiThread(new Runnable() {
             public void run() {
+                if(error.toLowerCase().equals("request timeout"))
+                    startDownload();
                 android.widget.Toast.makeText(getBaseContext(), error, Toast.LENGTH_LONG).show();
             }
         });
@@ -218,8 +243,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     public NetworkInfo getActiveNetworkInfo() {
         ConnectivityManager connectivityManager =
                 (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        return networkInfo;
+        return Objects.requireNonNull(connectivityManager).getActiveNetworkInfo();
     }
 
     @Override
@@ -232,11 +256,14 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
 
     public void startDownload() {
         if (!mDownloading && mNetworkFragment != null) {
-            mNetworkFragment.startDownload();
             mDownloading = true;
+            mNetworkFragment.startDownload();
         } else {
-            if(!mDownloading) {
+            if(mDownloading && getActiveNetworkInfo().isAvailable()) {
                 android.widget.Toast.makeText(getBaseContext(), "Already downloading...", Toast.LENGTH_LONG).show();
+            }
+            if (!getActiveNetworkInfo().isAvailable()) {
+                android.widget.Toast.makeText(getBaseContext(), "No internet connection", Toast.LENGTH_LONG).show();
             }
         }
     }

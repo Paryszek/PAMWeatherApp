@@ -1,6 +1,8 @@
 package com.example.michalparysz.weatherapp.Models.Forecast;
 
-public class Forecastday
+import java.io.Serializable;
+
+public class Forecastday implements Serializable
 {
     private Astro astro;
 
@@ -9,6 +11,8 @@ public class Forecastday
     private String date;
 
     private String date_epoch;
+
+    public Forecastday() {}
 
     public Astro getAstro ()
     {

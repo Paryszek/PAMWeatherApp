@@ -1,6 +1,8 @@
 package com.example.michalparysz.weatherapp.Models.Forecast;
 
-public class Current
+import java.io.Serializable;
+
+public class Current implements Serializable
 {
     private String temp_f;
 
@@ -41,6 +43,8 @@ public class Current
     private String precip_in;
 
     private String vis_miles;
+
+    public Current() {}
 
     public String getTemp_f ()
     {

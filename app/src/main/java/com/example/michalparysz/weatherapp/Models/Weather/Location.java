@@ -1,6 +1,8 @@
 package com.example.michalparysz.weatherapp.Models.Weather;
 
-public class Location
+import java.io.Serializable;
+
+public class Location implements Serializable
 {
     private String region;
 
@@ -17,6 +19,8 @@ public class Location
     private String lat;
 
     private String country;
+
+    public Location() {}
 
     public String getRegion ()
     {

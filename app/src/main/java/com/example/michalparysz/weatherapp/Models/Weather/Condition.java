@@ -1,12 +1,16 @@
 package com.example.michalparysz.weatherapp.Models.Weather;
 
-public class Condition
+import java.io.Serializable;
+
+public class Condition implements Serializable
 {
     private String icon;
 
     private String text;
 
     private String code;
+
+    public Condition() {}
 
     public String getIcon ()
     {
