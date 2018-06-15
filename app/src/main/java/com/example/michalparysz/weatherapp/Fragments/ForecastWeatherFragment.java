@@ -10,13 +10,13 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import com.squareup.picasso.Picasso;
 
 import com.example.michalparysz.weatherapp.Models.Forecast.Day;
 import com.example.michalparysz.weatherapp.Models.Forecast.Forecast;
 import com.example.michalparysz.weatherapp.Models.Forecast.Forecastday;
 import com.example.michalparysz.weatherapp.Models.Forecast.WeatherForecast;
 import com.example.michalparysz.weatherapp.R;
-import com.squareup.picasso.Picasso;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -86,6 +86,10 @@ public class ForecastWeatherFragment extends Fragment {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void refreashUnits() {
+        reloadViewFragment(_weatherForecast);
     }
 
     @OnClick(R.id.prevButton)

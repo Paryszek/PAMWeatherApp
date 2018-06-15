@@ -23,7 +23,6 @@ import com.example.michalparysz.weatherapp.Fragments.ForecastWeatherFragment;
 import com.example.michalparysz.weatherapp.Fragments.MoonFragment;
 import com.example.michalparysz.weatherapp.Fragments.SunFragment;
 import com.example.michalparysz.weatherapp.Fragments.WeatherFragment;
-import com.example.michalparysz.weatherapp.Models.Forecast.Forecast;
 import com.example.michalparysz.weatherapp.Models.Forecast.WeatherForecast;
 import com.example.michalparysz.weatherapp.Models.Result;
 import com.example.michalparysz.weatherapp.Models.Weather.Weather;
@@ -32,8 +31,10 @@ import com.example.michalparysz.weatherapp.Network.NetworkFragment;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
-import java.nio.file.Path;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
     public static String apiKey = "7725cec239f14e07a9f10908181506";
     public static File path;
     public static boolean connection = true;
+    public static String citiesFilename = "cities.data";
 
     private int refreshPeriod = 60000;
     private  AstroCalculator astroCalculator;
@@ -90,6 +92,7 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                 ois.close();
             } else {
                 currentCity = "Warsaw";
+                saveCitiesToFileIfEmpty();
             }
             if (currentCity == null){
                 currentCity = "Warsaw";
@@ -98,6 +101,14 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
             e.printStackTrace();
         }
 
+    }
+    private void saveCitiesToFileIfEmpty() throws IOException {
+        File file = new File(getBaseContext().getFilesDir(), citiesFilename);
+        FileOutputStream fout = new FileOutputStream(file);
+        ObjectOutputStream oos = new ObjectOutputStream(fout);
+        oos.writeObject(new ArrayList<String>().add("Warsaw"));
+        fout.close();
+        oos.close();
     }
 
     @Override
@@ -133,6 +144,8 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
                         imUnits = true;
                         reloadWeatherView();
                     } else {
+                        if(imUnits)
+                            reloadWeatherView();
                         imUnits = false;
                     }
                 }
@@ -303,9 +316,9 @@ public class MainActivity extends AppCompatActivity implements DownloadCallback 
 
     private void reloadWeatherView() {
         WeatherFragment weatherFragment = (WeatherFragment) _fragmentAdapter.getItem(0);
-        ForecastWeatherFragment forecastFragment = (ForecastWeatherFragment) _fragmentAdapter.getItem(1);
+        ForecastWeatherFragment forecastWeatherFragment = (ForecastWeatherFragment) _fragmentAdapter.getItem(1);
         weatherFragment.refreashUnits();
-        // forecastFragment.reloadSunFragment();
+        forecastWeatherFragment.refreashUnits();
     }
     private void setupViewPager(ViewPager viewPager) {
         FragmentManager fragmentManager = getSupportFragmentManager();

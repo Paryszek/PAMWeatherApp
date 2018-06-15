@@ -33,6 +33,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static com.example.michalparysz.weatherapp.MainActivity.citiesFilename;
+
 public class SettingsActivity extends AppCompatActivity {
     @BindView(R.id.latitudeInput)
     TextInputLayout latiduteInput;
@@ -56,7 +58,6 @@ public class SettingsActivity extends AppCompatActivity {
     private String reloadWeather = "false";
     ArrayList<String> citiesArray = new ArrayList<>();
     ArrayAdapter<String> citiesAdapter;
-    private String filename = "cities.data";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -212,19 +213,16 @@ public class SettingsActivity extends AppCompatActivity {
 
     private ArrayList<String> getCitiesFromFile() throws FileNotFoundException, IOException, ClassNotFoundException, EOFException, NullPointerException {
         ArrayList<String> citiesFromFile;
-        File file = new File(getBaseContext().getFilesDir(), filename);
-        if (!file.exists() || file.length() == 0) {
-            if(citiesArray != null) {
-                citiesArray.clear();
-                citiesArray = new ArrayList<>();
-            }
-            file.createNewFile();
-            citiesArray.add("Warsaw");
-            saveCitiesToFile();
-        } else {
-            citiesArray.add("Warsaw");
-            saveCitiesToFile();
-        }
+        File file = new File(getBaseContext().getFilesDir(), citiesFilename);
+//        if (!file.exists() || file.length() == 0) {
+//            if(citiesArray != null) {
+//                citiesArray.clear();
+//                citiesArray = new ArrayList<>();
+//            }
+//            file.createNewFile();
+//            citiesArray.add("Warsaw");
+//            saveCitiesToFile();
+//        }
         FileInputStream fin = new FileInputStream(file);
         ObjectInputStream ois = new ObjectInputStream(fin);
         citiesFromFile = (ArrayList<String>)ois.readObject();
@@ -234,7 +232,7 @@ public class SettingsActivity extends AppCompatActivity {
     }
 
     private void saveCitiesToFile() throws IOException{
-        File file = new File(getBaseContext().getFilesDir(), filename);
+        File file = new File(getBaseContext().getFilesDir(), citiesFilename);
         FileOutputStream fout = new FileOutputStream(file);
         ObjectOutputStream oos = new ObjectOutputStream(fout);
         oos.writeObject(citiesArray);
